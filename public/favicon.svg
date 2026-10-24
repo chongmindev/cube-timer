@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Same drawing as src/lib/logoPaths.ts. -->
+  <path fill="#d7261e" d="M16 2.5L3.88 9.5L3.88 17.62L8.97 20.56L8.97 12.44L21.09 5.44Z"/>
+  <path fill="#f5c400" d="M28.12 23.5L28.12 9.5L21.09 5.44L16 8.38L23.03 12.44L23.03 26.44Z"/>
+  <path fill="#1c4fa0" d="M3.88 23.5L16 30.5L23.03 26.44L23.03 20.56L16 24.62L3.88 17.62Z"/>
+</svg>
