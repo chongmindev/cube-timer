@@ -442,6 +442,36 @@ kbd {
   color: #000;
 }
 
+/* Typing mode: the circle frames a text field instead of a clock. */
+.typed {
+  width: 82cqh;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+  caret-color: var(--red);
+}
+
+.typed::placeholder {
+  color: var(--hairline);
+}
+
+.dial.is-typing:focus-within .disc {
+  border-color: var(--blue);
+}
+
+.dial.is-typing[data-error] .disc {
+  border-color: var(--red);
+}
+
+.hint.is-error {
+  color: var(--red);
+}
+
 /* The one moment: the circle snaps back to an outline when you stop. */
 .dial[data-phase='stopped'] .disc {
   transform: scale(1.03);

@@ -3,7 +3,7 @@ import { useScramble } from '../hooks/useScramble'
 import { useTimer } from '../hooks/useTimer'
 import { useUndoDelete } from '../hooks/useUndoDelete'
 import { EVENTS, getEvent } from '../lib/events'
-import { formatMs, formatSolve, uid } from '../lib/format'
+import { formatMs, formatSolve, parseTyped, uid } from '../lib/format'
 import { useStore } from '../lib/store'
 import { effective, sessionStats, type Penalty } from '../lib/stats'
 import { CubePreview } from './CubePreview'
@@ -24,6 +24,8 @@ export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean)
   const [notice, setNotice] = useState<string | null>(null)
   const [justSolvedId, setJustSolvedId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [typed, setTyped] = useState('')
+  const [typedError, setTypedError] = useState(false)
 
   const stats = useMemo(() => sessionStats(current.solves), [current.solves])
   const last = current.solves[current.solves.length - 1] ?? null
@@ -61,7 +63,7 @@ export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean)
   const timer = useTimer({
     holdMs: settings.holdMs,
     inspection: settings.inspection,
-    enabled: !openId && !menuOpen && scramble !== null,
+    enabled: !openId && !menuOpen && !settings.typing && scramble !== null,
     onFinish,
   })
 
@@ -74,16 +76,33 @@ export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean)
     if (solving) setNotice(null)
   }, [solving])
 
-  // I toggles inspection whenever the timer is idle.
+  // I toggles inspection and T toggles typing whenever the timer is idle.
   useEffect(() => {
     if (openId || menuOpen || timer.phase !== 'idle') return
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return
-      if (e.key.toLowerCase() === 'i') dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })
+      const key = e.key.toLowerCase()
+      if (key === 'i' && !settings.typing) {
+        dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })
+      } else if (key === 't') {
+        e.preventDefault() // keep the T out of the field that is about to appear
+        dispatch({ type: 'updateSettings', patch: { typing: !settings.typing } })
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [openId, menuOpen, timer.phase, settings.inspection, dispatch])
+  }, [openId, menuOpen, timer.phase, settings.inspection, settings.typing, dispatch])
+
+  const submitTyped = () => {
+    const result = parseTyped(typed)
+    if (!result) {
+      setTypedError(typed.trim() !== '')
+      return
+    }
+    onFinish(result.time, result.penalty)
+    setTyped('')
+    setTypedError(false)
+  }
 
   // Quick keys for the solve that just finished.
   useEffect(() => {
@@ -176,13 +195,23 @@ export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean)
               </button>
             }
           />
+          {!settings.typing && (
+            <button
+              className="toggle"
+              aria-pressed={settings.inspection}
+              onClick={() => dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })}
+              title="Toggle 15 second inspection (I)"
+            >
+              Inspection <kbd>I</kbd>
+            </button>
+          )}
           <button
             className="toggle"
-            aria-pressed={settings.inspection}
-            onClick={() => dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })}
-            title="Toggle 15 second inspection (I)"
+            aria-pressed={settings.typing}
+            onClick={() => dispatch({ type: 'updateSettings', patch: { typing: !settings.typing } })}
+            title="Type times in instead of timing (T)"
           >
-            Inspection <kbd>I</kbd>
+            Typing <kbd>T</kbd>
           </button>
           <div className="scramble-actions">
             <button className="text-button" onClick={back} disabled={!canGoBack}>
@@ -204,17 +233,49 @@ export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean)
       <section
         className="stage"
         onPointerDown={(e) => {
-          if (e.button === 0 && timer.phase !== 'running') timer.press()
+          if (e.button === 0 && timer.phase !== 'running' && !settings.typing) timer.press()
         }}
-        onPointerUp={timer.release}
-        onPointerCancel={timer.cancel}
+        onPointerUp={settings.typing ? undefined : timer.release}
+        onPointerCancel={settings.typing ? undefined : timer.cancel}
       >
-        <div className="dial" data-phase={timer.phase}>
-          <span className="disc" aria-hidden="true" />
-          <p className="digits" aria-live="off" data-long={display.length > 5 || undefined}>
-            {display}
-          </p>
-        </div>
+        {settings.typing ? (
+          <form
+            className="dial is-typing"
+            data-error={typedError || undefined}
+            onSubmit={(e) => {
+              e.preventDefault()
+              submitTyped()
+            }}
+          >
+            <span className="disc" aria-hidden="true" />
+            <input
+              className="digits typed"
+              data-long={typed.length > 5 || undefined}
+              value={typed}
+              onChange={(e) => {
+                setTyped(e.target.value)
+                setTypedError(false)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setTyped('')
+              }}
+              placeholder={last ? formatSolve(last, settings.decimals) : formatMs(0, settings.decimals)}
+              inputMode="decimal"
+              autoComplete="off"
+              spellCheck={false}
+              autoFocus
+              disabled={!scramble || !!openId}
+              aria-label="Type a time"
+            />
+          </form>
+        ) : (
+          <div className="dial" data-phase={timer.phase}>
+            <span className="disc" aria-hidden="true" />
+            <p className="digits" aria-live="off" data-long={display.length > 5 || undefined}>
+              {display}
+            </p>
+          </div>
+        )}
         <div className="under chrome">
           {notice && timer.phase === 'idle' && (
             <p className="notice">
@@ -263,7 +324,13 @@ export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean)
               </button>
             </div>
           )}
-          {!last && timer.phase === 'idle' && (
+          {settings.typing && (typedError || !last) && (
+            <p className={`hint ${typedError ? 'is-error' : ''}`}>
+              {typedError ? "That isn't a time. " : ''}Type a time and press Enter. 1234 means 12.34; end with + for
+              a +2, or type DNF.
+            </p>
+          )}
+          {!last && timer.phase === 'idle' && !settings.typing && (
             <p className="hint">
               {settings.inspection
                 ? 'Tap space to start the 15 second inspection, then hold and let go to start.'

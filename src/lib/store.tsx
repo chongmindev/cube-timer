@@ -21,6 +21,7 @@ export interface Settings {
   decimals: 2 | 3
   theme: Theme
   showPreview: boolean
+  typing: boolean // enter times by keyboard instead of timing
 }
 
 export interface State {
@@ -37,6 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
   decimals: 2,
   theme: 'system',
   showPreview: true,
+  typing: false,
 }
 
 const STORAGE_KEY = 'cube-timer:v1'

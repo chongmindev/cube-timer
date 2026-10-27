@@ -13,6 +13,8 @@ npm run dev
 
 - **Timer:** hold space (or hold the time on a phone) until it turns green, then let go. Any key or tap stops it.
 - Optional 15 second WCA inspection with automatic +2 and DNF. Toggle it right on the timer screen or press `I`.
+- Typing mode (`T`) for entering times from another timer: `1234` is 12.34, end with `+` for a +2, or type `DNF`.
+- A daily streak in the top bar, with the last week at a glance.
 - Random-state scrambles for all WCA events (via [cubing.js](https://js.cubing.net/cubing/)) with a flat preview of the scrambled puzzle, plus Previous and Next scramble.
 - Focus mode fades everything but the time while you solve.
 - After a solve: `2` toggles +2, `D` toggles DNF, `Backspace` deletes, with undo.
