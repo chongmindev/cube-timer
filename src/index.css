@@ -202,6 +202,45 @@ kbd {
 }
 
 
+/* Daily streak: one short bar per day of the last week, filled for days with a solve. */
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-right: auto;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.streak-week {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 1.1rem;
+}
+
+.streak-day {
+  width: 5px;
+  height: 0.7rem;
+  background: var(--hairline);
+}
+
+.streak-day.is-on {
+  background: var(--ink);
+}
+
+.streak-day.is-today {
+  height: 100%;
+}
+
+.streak-day.is-today.is-on {
+  background: var(--red);
+}
+
+.streak.is-due .streak-count {
+  color: var(--muted);
+}
+
 .views {
   display: flex;
   gap: clamp(1.25rem, 3vw, 2.25rem);
@@ -1033,6 +1072,10 @@ kbd {
   }
 
   .wordmark-text {
+    display: none;
+  }
+
+  .streak-week {
     display: none;
   }
 

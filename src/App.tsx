@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { SessionsView } from './components/SessionsView'
 import { SettingsView } from './components/SettingsView'
 import { Logo } from './components/Logo'
+import { StreakMark } from './components/StreakMark'
 import { TimerView } from './components/TimerView'
 import { StoreProvider, useStore } from './lib/store'
 
@@ -32,6 +33,7 @@ function Shell() {
           <Logo />
           <span className="wordmark-text">cube timer</span>
         </span>
+        <StreakMark />
         <nav className="views" aria-label="Main">
           {VIEWS.map((v) => (
             <button
