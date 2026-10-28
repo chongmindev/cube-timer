@@ -6,6 +6,13 @@ export interface Solve {
   penalty: Penalty
   scramble: string
   date: number
+  recon?: Recon
+}
+
+/** A step-by-step reconstruction. The first step is how the cube was held (a rotation, maybe empty). */
+export interface Recon {
+  steps: { moves: string; label: string }[]
+  done: boolean
 }
 
 /** Time that counts for stats. DNF is Infinity so it sorts last. */

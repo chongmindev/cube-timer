@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { scrambledFaces, type Face } from '../lib/cubeState'
 
 // WCA color scheme (white top, green front), tuned to the app's primaries.
-const COLORS: Record<Face, string> = {
+export const COLORS: Record<Face, string> = {
   U: '#ffffff',
   F: '#29a35a',
   R: 'var(--red)',

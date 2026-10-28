@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { formatDate, formatMs, formatSolve } from '../lib/format'
+import { reconLines, reconSummary } from '../lib/recon/text'
 import { cardText, drawCard, type CardData } from '../lib/shareCard'
 import { effective, rolling, type Penalty, type Solve } from '../lib/stats'
 
@@ -18,6 +19,7 @@ export function SolveDetail({
   onPenalty,
   onDelete,
   onClose,
+  onReconstruct,
 }: {
   solves: Solve[]
   index: number
@@ -27,6 +29,8 @@ export function SolveDetail({
   onPenalty: (p: Penalty) => void
   onDelete: () => void
   onClose: () => void
+  /** Only offered for 3x3 events. */
+  onReconstruct?: () => void
 }) {
   const solve = solves[index]
   const [status, setStatus] = useState<string | null>(null)
@@ -53,6 +57,7 @@ export function SolveDetail({
       solveNumber: index + 1,
       session: sessionName,
       recent: solves.slice(Math.max(0, index - 11), index + 1).map(effective),
+      recon: solve.recon?.done ? { lines: reconLines(solve.recon), summary: reconSummary(solve.recon, solve) } : undefined,
     }
   }, [solves, solve, index, eventName, sessionName, decimals])
 
@@ -138,6 +143,29 @@ export function SolveDetail({
           <h3>Scramble</h3>
           <p className="scramble-text small">{solve.scramble}</p>
         </section>
+
+        {onReconstruct && (
+          <section className="sheet-section">
+            <div className="side-head">
+              <h3>Reconstruction</h3>
+              <button className="text-button" onClick={onReconstruct}>
+                {solve.recon ? (solve.recon.done ? 'Edit' : 'Continue') : 'Reconstruct'}
+              </button>
+            </div>
+            {solve.recon?.done ? (
+              <>
+                <pre className="share-text">{data.recon!.lines.join('\n')}</pre>
+                <p className="muted">{data.recon!.summary}</p>
+              </>
+            ) : (
+              <p className="muted">
+                {solve.recon
+                  ? `Draft, ${solve.recon.steps.length} step${solve.recon.steps.length === 1 ? '' : 's'} in.`
+                  : 'Work out what you did, step by step, while you still remember it.'}
+              </p>
+            )}
+          </section>
+        )}
 
         <section className="sheet-section share">
           <fieldset className="segmented">

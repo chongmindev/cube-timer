@@ -15,6 +15,8 @@ export interface CardData {
   session: string
   /** Effective times (ms, Infinity for DNF) of up to 12 solves ending with this one. */
   recent: number[]
+  /** Finished reconstruction, one line per step, plus its move count and TPS. */
+  recon?: { lines: string[]; summary: string }
 }
 
 const W = 1080
@@ -212,6 +214,8 @@ export function cardText(d: CardData): string {
   if (stats.length) lines.push(stats.join('   '))
   if (spark) lines.push(`last ${d.recent.length}  ${spark}`)
 
-  lines.push('', d.scramble, '', 'timed with cube timer')
+  lines.push('', d.scramble)
+  if (d.recon) lines.push('', ...d.recon.lines, d.recon.summary)
+  lines.push('', 'timed with cube timer')
   return lines.join('\n')
 }

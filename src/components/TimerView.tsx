@@ -12,7 +12,13 @@ import { Shape } from './Shape'
 import { SolveDetail } from './SolveDetail'
 import { TimesList } from './TimesList'
 
-export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean) => void }) {
+export function TimerView({
+  onFocusChange,
+  onReconstruct,
+}: {
+  onFocusChange: (focused: boolean) => void
+  onReconstruct: (solveId: string) => void
+}) {
   const { state, current, dispatch } = useStore()
   const { settings } = state
   const event = getEvent(current.event)
@@ -368,6 +374,7 @@ export function TimerView({ onFocusChange }: { onFocusChange: (focused: boolean)
             setOpenId(null)
           }}
           onClose={() => setOpenId(null)}
+          onReconstruct={event.puzzle === '3x3x3' ? () => onReconstruct(current.solves[open].id) : undefined}
         />
       )}
       {toast}

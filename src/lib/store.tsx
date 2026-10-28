@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, type ReactNode } from 'react'
 import { uid } from './format'
-import type { Penalty, Solve } from './stats'
+import type { Penalty, Recon, Solve } from './stats'
 
 export interface Session {
   id: string
@@ -67,6 +67,7 @@ export type Action =
   | { type: 'addSolve'; solve: Solve }
   | { type: 'setPenalty'; solveId: string; penalty: Penalty }
   | { type: 'deleteSolve'; solveId: string }
+  | { type: 'setRecon'; solveId: string; recon: Recon | undefined }
   | { type: 'setSolves'; sessionId: string; solves: Solve[] }
   | { type: 'selectSession'; id: string }
   | { type: 'selectEvent'; event: string }
@@ -88,6 +89,11 @@ function reducer(state: State, action: Action): State {
       return mapCurrent(state, (s) => ({
         ...s,
         solves: s.solves.map((x) => (x.id === action.solveId ? { ...x, penalty: action.penalty } : x)),
+      }))
+    case 'setRecon':
+      return mapCurrent(state, (s) => ({
+        ...s,
+        solves: s.solves.map((x) => (x.id === action.solveId ? { ...x, recon: action.recon } : x)),
       }))
     case 'deleteSolve':
       return mapCurrent(state, (s) => ({ ...s, solves: s.solves.filter((x) => x.id !== action.solveId) }))

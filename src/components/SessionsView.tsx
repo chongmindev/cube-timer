@@ -7,7 +7,13 @@ import { sessionStats } from '../lib/stats'
 import { SolveDetail } from './SolveDetail'
 import { TimesList } from './TimesList'
 
-export function SessionsView({ onOpenTimer }: { onOpenTimer: () => void }) {
+export function SessionsView({
+  onOpenTimer,
+  onReconstruct,
+}: {
+  onOpenTimer: () => void
+  onReconstruct: (solveId: string) => void
+}) {
   const { state, current, dispatch } = useStore()
   const decimals = state.settings.decimals
   const stats = useMemo(() => sessionStats(current.solves), [current.solves])
@@ -145,6 +151,7 @@ export function SessionsView({ onOpenTimer }: { onOpenTimer: () => void }) {
             setOpenId(null)
           }}
           onClose={() => setOpenId(null)}
+          onReconstruct={getEvent(current.event).puzzle === '3x3x3' ? () => onReconstruct(current.solves[open].id) : undefined}
         />
       )}
       {toast}
