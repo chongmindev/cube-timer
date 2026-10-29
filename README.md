@@ -24,3 +24,5 @@ npm run dev
 - **Settings:** inspection, hold time, what to show while solving, decimals, theme, export and import.
 
 Data lives in the browser (localStorage). See `IDEAS.md` for what's next.
+
+MIT licensed. See `LICENSE`.
