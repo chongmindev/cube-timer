@@ -238,11 +238,12 @@ export function TimerView({
 
       <section
         className="stage"
+        // Touch starts the timer on phones; with a mouse, only Space does.
         onPointerDown={(e) => {
-          if (e.button === 0 && timer.phase !== 'running' && !settings.typing) timer.press()
+          if (e.pointerType !== 'mouse' && timer.phase !== 'running' && !settings.typing) timer.press()
         }}
-        onPointerUp={settings.typing ? undefined : timer.release}
-        onPointerCancel={settings.typing ? undefined : timer.cancel}
+        onPointerUp={(e) => e.pointerType !== 'mouse' && !settings.typing && timer.release()}
+        onPointerCancel={(e) => e.pointerType !== 'mouse' && !settings.typing && timer.cancel()}
       >
         {settings.typing ? (
           <form
