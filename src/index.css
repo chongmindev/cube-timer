@@ -1072,7 +1072,7 @@ kbd {
   border-bottom: var(--rule) solid var(--ink);
 }
 
-.recon-cube .net {
+.recon-cube .cube-3d {
   width: 100%;
 }
 
@@ -1430,6 +1430,18 @@ kbd {
 /* Scramble net: square stickers set into solid black faces. */
 .net {
   display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cube-3d {
+  width: 100%;
+  max-width: 22rem;
+  aspect-ratio: 1;
+  touch-action: none;
+}
+
+.cube-3d twisty-player {
   width: 100%;
   height: 100%;
 }

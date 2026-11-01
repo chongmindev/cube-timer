@@ -9,10 +9,11 @@ import {
   type State,
 } from '../lib/recon/cube'
 import { reconLines, reconSummary } from '../lib/recon/text'
-import { describeStep, stageOf } from '../lib/recon/suggest'
+import { crossColor, describeStep, stageOf } from '../lib/recon/suggest'
 import { useSuggestions } from '../lib/recon/useSuggestions'
 import type { Recon, Solve } from '../lib/stats'
-import { FaceletNet, LastLayerCase } from './FaceletNet'
+import { Cube3D } from './Cube3D'
+import { LastLayerCase } from './FaceletNet'
 import { COLORS } from './ScrambleNet'
 
 const FACE_FOR_COLOR = ['U', 'R', 'F', 'D', 'L', 'B'] as const
@@ -38,6 +39,7 @@ export function ReconstructView({
   const [input, setInput] = useState('')
   const [pairPick, setPairPick] = useState<string | null>(null)
   const [bottom, setBottom] = useState<number | null>(null)
+  const [playToken, setPlayToken] = useState(0)
 
   const scrambled = useMemo(() => apply(solvedState(), solve.scramble), [solve.scramble])
   const current = useMemo(
@@ -60,6 +62,8 @@ export function ReconstructView({
 
   const parsed = input.trim() ? parseAlg(input) : []
   const preview = parsed && parsed.length ? apply(current, parsed.join(' ')) : current
+  const setup = [solve.scramble, ...steps.map((s) => s.moves)].filter(Boolean).join(' ')
+  const typed = parsed ? parsed.join(' ') : ''
   const check =
     stage === 'hold' || !parsed || !parsed.length ? null : describeStep(current, preview)
 
@@ -101,14 +105,25 @@ export function ReconstructView({
 
       <div className="recon-grid">
         <section className="recon-cube">
-          <FaceletNet state={preview} highlight={stage === 'f2l' && !input ? selectedPair?.stickers : null} />
+          <Cube3D
+            setup={setup}
+            moves={typed}
+            highlight={stage === 'f2l' && !input && selectedPair ? { pair: selectedPair.pair, crossColor: crossColor(current) } : null}
+            playToken={playToken}
+          />
           <p className="muted recon-caption">
             {steps.length === 0
               ? 'As scrambled: white top, green front.'
-              : input && parsed
+              : typed
                 ? 'After the moves you’re typing.'
-                : 'From how you held it, after the last step.'}
+                : 'From how you held it, after the last step.'}{' '}
+            Drag to look around; the floating stickers are the back, left and bottom.
           </p>
+          {typed && (
+            <button className="text-button" onClick={() => setPlayToken((t) => t + 1)}>
+              Play these moves
+            </button>
+          )}
         </section>
 
         <section className="recon-steps">
