@@ -1279,6 +1279,63 @@ kbd {
   align-self: stretch;
 }
 
+.recon-suggest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* On a laptop or bigger the page fits the window: the columns scroll on their own and the moves
+   field stays in view at the bottom of the suggestions. */
+@media (min-width: 1001px) {
+  .app:has(.recon-view) {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .app:has(.recon-view) .view {
+    min-height: 0;
+  }
+
+  .recon-view {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 1.25rem;
+  }
+
+  .recon-grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .recon-cube,
+  .recon-steps,
+  .recon-done {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .recon-suggest {
+    min-height: 0;
+  }
+
+  .recon-suggest-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    /* Room so hover backgrounds and focus rings aren't clipped. */
+    padding-right: 0.25rem;
+  }
+
+  .recon-input {
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 1000px) {
   .recon-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

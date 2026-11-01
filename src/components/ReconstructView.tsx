@@ -221,127 +221,128 @@ export function ReconstructView({
           ) : (
             <>
               <h2>{STAGE_TITLE[stage]}</h2>
-              {loading && <p className="muted">Finding likely moves…</p>}
+              <div className="recon-suggest-list">
+                {loading && <p className="muted">Finding likely moves…</p>}
 
-              {stage === 'hold' && (
-                <div className="recon-hold">
-                  <p className="muted">Which color was your cross? The number is its fewest moves.</p>
-                  <div className="swatches">
-                    {COLOR_NAMES.map((name, c) => (
-                      <button
-                        key={c}
-                        className={`swatch ${bottom === c ? 'is-on' : ''}`}
-                        onClick={() => {
-                          setBottom(c)
-                          fill(holdRotation(c, c === 0 || c === 3 ? 2 : 0) ?? '')
-                        }}
-                        aria-pressed={bottom === c}
-                      >
-                        <span className="chip" style={{ background: COLORS[FACE_FOR_COLOR[c]] }} />
-                        {name}
-                        <span className="muted">{holdInfo ? holdInfo[c] : ''}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {bottom !== null && (
-                    <>
-                      <p className="muted">And the front?</p>
-                      <div className="swatches">
-                        {COLOR_NAMES.map((name, c) =>
-                          c === bottom || c === OPPOSITE[bottom] ? null : (
-                            <button key={c} className="swatch" onClick={() => fill(holdRotation(bottom, c) ?? '')}>
-                              <span className="chip" style={{ background: COLORS[FACE_FOR_COLOR[c]] }} />
-                              {name}
-                            </button>
-                          ),
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {stage === 'cross' && cross && (
-                <ul className="recon-options">
-                  {cross.cross.map((m) => (
-                    <li key={m}>
-                      <button onClick={() => fill(m)}>
-                        <span className="recon-moves">{m}</span>
-                        <small>Cross, {m.split(' ').length} moves</small>
-                      </button>
-                    </li>
-                  ))}
-                  {cross.xcross.map((x) => (
-                    <li key={x.moves}>
-                      <button onClick={() => fill(x.moves)}>
-                        <span className="recon-moves">{x.moves}</span>
-                        <small>X-cross with the {x.name} pair, {x.moves.split(' ').length} moves</small>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {stage === 'f2l' && f2l && (
-                <>
-                  <ul className="recon-pairs">
-                    {f2l.map((p) => (
-                      <li key={p.pair}>
+                {stage === 'hold' && (
+                  <div className="recon-hold">
+                    <p className="muted">Which color was your cross? The number is its fewest moves.</p>
+                    <div className="swatches">
+                      {COLOR_NAMES.map((name, c) => (
                         <button
-                          className={selectedPair?.pair === p.pair ? 'is-on' : ''}
+                          key={c}
+                          className={`swatch ${bottom === c ? 'is-on' : ''}`}
                           onClick={() => {
-                            setPairPick(p.pair)
-                            setViewing(null)
+                            setBottom(c)
+                            fill(holdRotation(c, c === 0 || c === 3 ? 2 : 0) ?? '')
                           }}
-                          aria-pressed={selectedPair?.pair === p.pair}
+                          aria-pressed={bottom === c}
                         >
-                          <span className="pair-chips">
-                            {p.pair.split('-').map((c) => (
-                              <span key={c} className="chip" style={{ background: COLORS[FACE_FOR_COLOR[Number(c)]] }} />
-                            ))}
-                          </span>
-                          {p.name}
-                          <small>
-                            goes {p.slot}.{' '}
-                            {p.visible === 2 ? 'Both pieces in view.' : p.visible === 1 ? 'One piece in view.' : 'Hidden.'}
-                          </small>
+                          <span className="chip" style={{ background: COLORS[FACE_FOR_COLOR[c]] }} />
+                          {name}
+                          <span className="muted">{holdInfo ? holdInfo[c] : ''}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {bottom !== null && (
+                      <>
+                        <p className="muted">And the front?</p>
+                        <div className="swatches">
+                          {COLOR_NAMES.map((name, c) =>
+                            c === bottom || c === OPPOSITE[bottom] ? null : (
+                              <button key={c} className="swatch" onClick={() => fill(holdRotation(bottom, c) ?? '')}>
+                                <span className="chip" style={{ background: COLORS[FACE_FOR_COLOR[c]] }} />
+                                {name}
+                              </button>
+                            ),
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {stage === 'cross' && cross && (
+                  <ul className="recon-options">
+                    {cross.cross.map((m) => (
+                      <li key={m}>
+                        <button onClick={() => fill(m)}>
+                          <span className="recon-moves">{m}</span>
+                          <small>Cross, {m.split(' ').length} moves</small>
+                        </button>
+                      </li>
+                    ))}
+                    {cross.xcross.map((x) => (
+                      <li key={x.moves}>
+                        <button onClick={() => fill(x.moves)}>
+                          <span className="recon-moves">{x.moves}</span>
+                          <small>X-cross with the {x.name} pair, {x.moves.split(' ').length} moves</small>
                         </button>
                       </li>
                     ))}
                   </ul>
-                  {selectedPair && (
+                )}
+
+                {stage === 'f2l' && f2l && (
+                  <>
+                    <ul className="recon-pairs">
+                      {f2l.map((p) => (
+                        <li key={p.pair}>
+                          <button
+                            className={selectedPair?.pair === p.pair ? 'is-on' : ''}
+                            onClick={() => {
+                              setPairPick(p.pair)
+                              setViewing(null)
+                            }}
+                            aria-pressed={selectedPair?.pair === p.pair}
+                          >
+                            <span className="pair-chips">
+                              {p.pair.split('-').map((c) => (
+                                <span key={c} className="chip" style={{ background: COLORS[FACE_FOR_COLOR[Number(c)]] }} />
+                              ))}
+                            </span>
+                            {p.name}
+                            <small>
+                              goes {p.slot}.{' '}
+                              {p.visible === 2 ? 'Both pieces in view.' : p.visible === 1 ? 'One piece in view.' : 'Hidden.'}
+                            </small>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    {selectedPair && (
+                      <ul className="recon-options">
+                        {selectedPair.moves.map((m) => (
+                          <li key={m}>
+                            <button onClick={() => fill(m)}>
+                              <span className="recon-moves">{m}</span>
+                            </button>
+                          </li>
+                        ))}
+                        {!selectedPair.moves.length && <li className="muted">No short solution found. Type yours.</li>}
+                      </ul>
+                    )}
+                  </>
+                )}
+
+                {(stage === 'oll' || stage === 'pll') && ll && (
+                  <>
+                    <div className="recon-case">
+                      <LastLayerCase state={current} mode={stage} />
+                      <p>{ll.name ?? 'Unknown case'}</p>
+                    </div>
                     <ul className="recon-options">
-                      {selectedPair.moves.map((m) => (
+                      {ll.algs.map((m) => (
                         <li key={m}>
                           <button onClick={() => fill(m)}>
                             <span className="recon-moves">{m}</span>
                           </button>
                         </li>
                       ))}
-                      {!selectedPair.moves.length && <li className="muted">No short solution found. Type yours.</li>}
                     </ul>
-                  )}
-                </>
-              )}
-
-              {(stage === 'oll' || stage === 'pll') && ll && (
-                <>
-                  <div className="recon-case">
-                    <LastLayerCase state={current} mode={stage} />
-                    <p>{ll.name ?? 'Unknown case'}</p>
-                  </div>
-                  <ul className="recon-options">
-                    {ll.algs.map((m) => (
-                      <li key={m}>
-                        <button onClick={() => fill(m)}>
-                          <span className="recon-moves">{m}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-
+                  </>
+                )}
+              </div>
               <form
                 className="recon-input"
                 onSubmit={(e) => {
