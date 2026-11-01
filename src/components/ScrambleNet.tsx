@@ -7,7 +7,7 @@ export const COLORS: Record<Face, string> = {
   F: '#29a35a',
   R: 'var(--red)',
   B: 'var(--blue)',
-  L: '#e06400',
+  L: '#ff7300',
   D: 'var(--yellow)',
 }
 
