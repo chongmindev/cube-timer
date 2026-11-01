@@ -40,6 +40,9 @@ export function ReconstructView({
   const [pairPick, setPairPick] = useState<string | null>(null)
   const [bottom, setBottom] = useState<number | null>(null)
   const [playToken, setPlayToken] = useState(0)
+  // What the cube shows: null is the latest step plus what you're typing, a number is that one
+  // step, and 'all' is the whole solve from the scramble.
+  const [viewing, setViewing] = useState<number | 'all' | null>(null)
 
   const scrambled = useMemo(() => apply(solvedState(), solve.scramble), [solve.scramble])
   const current = useMemo(
@@ -62,8 +65,26 @@ export function ReconstructView({
 
   const parsed = input.trim() ? parseAlg(input) : []
   const preview = parsed && parsed.length ? apply(current, parsed.join(' ')) : current
-  const setup = [solve.scramble, ...steps.map((s) => s.moves)].filter(Boolean).join(' ')
   const typed = parsed ? parsed.join(' ') : ''
+  const upTo = (n: number) => [solve.scramble, ...steps.slice(0, n).map((s) => s.moves)].filter(Boolean).join(' ')
+  const view =
+    viewing === null
+      ? { setup: upTo(steps.length), moves: typed }
+      : viewing === 'all'
+        ? { setup: solve.scramble, moves: steps.map((s) => s.moves).filter(Boolean).join(' ') }
+        : { setup: upTo(viewing), moves: steps[viewing].moves }
+  const play = (v: number | 'all' | null) => {
+    setViewing(v)
+    setPlayToken((t) => t + 1)
+  }
+  const fill = (moves: string) => {
+    setInput(moves)
+    setViewing(null)
+  }
+  const edit = (next: typeof steps) => {
+    setSteps(next)
+    setViewing(null)
+  }
   const check =
     stage === 'hold' || !parsed || !parsed.length ? null : describeStep(current, preview)
 
@@ -81,7 +102,7 @@ export function ReconstructView({
     const moves = parsed.join(' ')
     if (stage !== 'hold' && !moves) return
     const label = stage === 'hold' ? 'inspection' : describeStep(current, preview).label
-    setSteps([...steps, { moves, label }])
+    edit([...steps, { moves, label }])
     setInput('')
     setPairPick(null)
   }
@@ -106,24 +127,49 @@ export function ReconstructView({
       <div className="recon-grid">
         <section className="recon-cube">
           <Cube3D
-            setup={setup}
-            moves={typed}
-            highlight={stage === 'f2l' && !input && selectedPair ? { pair: selectedPair.pair, crossColor: crossColor(current) } : null}
+            setup={view.setup}
+            moves={view.moves}
+            highlight={
+              viewing === null && stage === 'f2l' && !input && selectedPair
+                ? { pair: selectedPair.pair, crossColor: crossColor(current) }
+                : null
+            }
             playToken={playToken}
           />
           <p className="muted recon-caption">
-            {steps.length === 0
-              ? 'As scrambled: white top, green front.'
-              : typed
-                ? 'After the moves you’re typing.'
-                : 'From how you held it, after the last step.'}{' '}
+            {viewing === 'all'
+              ? 'The whole solve, from the scramble.'
+              : viewing !== null
+                ? `Your ${steps[viewing].label || 'step'}.`
+                : steps.length === 0
+                  ? 'As scrambled: white top, green front.'
+                  : typed
+                    ? 'After the moves you’re typing.'
+                    : 'From how you held it, after the last step.'}{' '}
             Drag to look around; the floating stickers are the back, left and bottom.
           </p>
-          {typed && (
-            <button className="text-button" onClick={() => setPlayToken((t) => t + 1)}>
-              Play these moves
-            </button>
-          )}
+          <div className="recon-step-actions">
+            {viewing === null && typed && (
+              <button className="text-button" onClick={() => play(null)}>
+                Play these moves
+              </button>
+            )}
+            {viewing !== null && (
+              <button className="text-button" onClick={() => play(viewing)}>
+                Play again
+              </button>
+            )}
+            {steps.some((s) => s.moves) && (
+              <button className="text-button" onClick={() => play('all')}>
+                Play solve
+              </button>
+            )}
+            {viewing !== null && (
+              <button className="text-button" onClick={() => setViewing(null)}>
+                Back to {done ? 'the end' : 'this step'}
+              </button>
+            )}
+          </div>
         </section>
 
         <section className="recon-steps">
@@ -131,13 +177,20 @@ export function ReconstructView({
           <ol>
             {steps.map((s, i) => (
               <li key={i}>
-                <span className="muted">{s.label || 'step'}</span>
-                <span className="recon-moves">{s.moves || 'no rotation'}</span>
-                <span className="muted">{s.moves ? parseAlg(s.moves)!.filter((m) => !/^[xyz]/.test(m)).length : ''}</span>
+                <button
+                  className={`recon-row recon-step ${viewing === i ? 'is-on' : ''}`}
+                  onClick={() => play(i)}
+                  aria-pressed={viewing === i}
+                  title="Show this step on the cube"
+                >
+                  <span className="muted">{s.label || 'step'}</span>
+                  <span className="recon-moves">{s.moves || 'no rotation'}</span>
+                  <span className="muted">{s.moves ? parseAlg(s.moves)!.filter((m) => !/^[xyz]/.test(m)).length : ''}</span>
+                </button>
               </li>
             ))}
             {!done && (
-              <li className="is-now">
+              <li className="recon-row is-now">
                 <span>{STAGE_TITLE[stage]}</span>
                 <span className="recon-moves muted">{input || '…'}</span>
                 <span />
@@ -145,10 +198,10 @@ export function ReconstructView({
             )}
           </ol>
           <div className="recon-step-actions">
-            <button className="text-button" onClick={() => setSteps(steps.slice(0, -1))} disabled={!steps.length}>
+            <button className="text-button" onClick={() => edit(steps.slice(0, -1))} disabled={!steps.length}>
               Undo last step
             </button>
-            <button className="text-button danger" onClick={() => setSteps([])} disabled={!steps.length}>
+            <button className="text-button danger" onClick={() => edit([])} disabled={!steps.length}>
               Start over
             </button>
           </div>
@@ -180,7 +233,7 @@ export function ReconstructView({
                         className={`swatch ${bottom === c ? 'is-on' : ''}`}
                         onClick={() => {
                           setBottom(c)
-                          setInput(holdRotation(c, c === 0 || c === 3 ? 2 : 0) ?? '')
+                          fill(holdRotation(c, c === 0 || c === 3 ? 2 : 0) ?? '')
                         }}
                         aria-pressed={bottom === c}
                       >
@@ -196,7 +249,7 @@ export function ReconstructView({
                       <div className="swatches">
                         {COLOR_NAMES.map((name, c) =>
                           c === bottom || c === OPPOSITE[bottom] ? null : (
-                            <button key={c} className="swatch" onClick={() => setInput(holdRotation(bottom, c) ?? '')}>
+                            <button key={c} className="swatch" onClick={() => fill(holdRotation(bottom, c) ?? '')}>
                               <span className="chip" style={{ background: COLORS[FACE_FOR_COLOR[c]] }} />
                               {name}
                             </button>
@@ -212,7 +265,7 @@ export function ReconstructView({
                 <ul className="recon-options">
                   {cross.cross.map((m) => (
                     <li key={m}>
-                      <button onClick={() => setInput(m)}>
+                      <button onClick={() => fill(m)}>
                         <span className="recon-moves">{m}</span>
                         <small>Cross, {m.split(' ').length} moves</small>
                       </button>
@@ -220,7 +273,7 @@ export function ReconstructView({
                   ))}
                   {cross.xcross.map((x) => (
                     <li key={x.moves}>
-                      <button onClick={() => setInput(x.moves)}>
+                      <button onClick={() => fill(x.moves)}>
                         <span className="recon-moves">{x.moves}</span>
                         <small>X-cross with the {x.name} pair, {x.moves.split(' ').length} moves</small>
                       </button>
@@ -236,7 +289,10 @@ export function ReconstructView({
                       <li key={p.pair}>
                         <button
                           className={selectedPair?.pair === p.pair ? 'is-on' : ''}
-                          onClick={() => setPairPick(p.pair)}
+                          onClick={() => {
+                            setPairPick(p.pair)
+                            setViewing(null)
+                          }}
                           aria-pressed={selectedPair?.pair === p.pair}
                         >
                           <span className="pair-chips">
@@ -257,7 +313,7 @@ export function ReconstructView({
                     <ul className="recon-options">
                       {selectedPair.moves.map((m) => (
                         <li key={m}>
-                          <button onClick={() => setInput(m)}>
+                          <button onClick={() => fill(m)}>
                             <span className="recon-moves">{m}</span>
                           </button>
                         </li>
@@ -277,7 +333,7 @@ export function ReconstructView({
                   <ul className="recon-options">
                     {ll.algs.map((m) => (
                       <li key={m}>
-                        <button onClick={() => setInput(m)}>
+                        <button onClick={() => fill(m)}>
                           <span className="recon-moves">{m}</span>
                         </button>
                       </li>
@@ -295,7 +351,10 @@ export function ReconstructView({
               >
                 <input
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value)
+                    setViewing(null)
+                  }}
                   placeholder={stage === 'hold' ? 'Rotation, like z2' : 'Pick one above, or type your moves'}
                   spellCheck={false}
                   autoComplete="off"

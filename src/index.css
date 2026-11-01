@@ -1094,20 +1094,23 @@ kbd {
 }
 
 .recon-steps li {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.recon-row {
   display: grid;
   grid-template-columns: 7.5rem minmax(0, 1fr) 2rem;
   gap: 0.75rem;
   align-items: baseline;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--hairline);
+  padding: 0.6rem 0.5rem;
   font-variant-numeric: tabular-nums;
 }
 
-.recon-steps li > :last-child {
+.recon-row > :last-child {
   text-align: right;
 }
 
-.recon-steps li.is-now {
+.recon-row.is-now {
   font-weight: 600;
 }
 
@@ -1444,4 +1447,23 @@ kbd {
 .cube-3d twisty-player {
   width: 100%;
   height: 100%;
+}
+
+.recon-step {
+  width: 100%;
+  text-align: left;
+}
+
+.recon-step:hover {
+  background: var(--yellow);
+  color: #000;
+}
+
+.recon-step:hover .muted {
+  color: #000;
+}
+
+.recon-step.is-on {
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--ink);
 }
