@@ -13,6 +13,7 @@ export const WCA_ID = /^\d{4}[A-Z]{4}\d{2}$/
 export interface WcaRecord {
   best: number
   worldRank: number
+  continentRank: number
   countryRank: number
 }
 
@@ -22,14 +23,17 @@ export interface WcaProfile {
   country: string
   url: string
   competitions: number
+  medals: { gold: number; silver: number; bronze: number }
+  /** How many official records they have set, by level. */
+  recordsSet: { national: number; continental: number; world: number }
   records: Record<string, { single?: WcaRecord; average?: WcaRecord }>
   fetchedAt: number
 }
 
-type ApiRecord = { best: number; world_rank: number; country_rank: number }
+type ApiRecord = { best: number; world_rank: number; continent_rank: number; country_rank: number }
 
 const toRecord = (r?: ApiRecord): WcaRecord | undefined =>
-  r && { best: r.best, worldRank: r.world_rank, countryRank: r.country_rank }
+  r && { best: r.best, worldRank: r.world_rank, continentRank: r.continent_rank, countryRank: r.country_rank }
 
 /** The profile for a WCA ID, or null when there is none. Throws when the WCA can't be reached. */
 export async function fetchProfile(id: string): Promise<WcaProfile | null> {
@@ -47,6 +51,8 @@ export async function fetchProfile(id: string): Promise<WcaProfile | null> {
     country: d.person.country?.name ?? '',
     url: d.person.url,
     competitions: d.competition_count ?? 0,
+    medals: { gold: d.medals?.gold ?? 0, silver: d.medals?.silver ?? 0, bronze: d.medals?.bronze ?? 0 },
+    recordsSet: { national: d.records?.national ?? 0, continental: d.records?.continental ?? 0, world: d.records?.world ?? 0 },
     records,
     fetchedAt: Date.now(),
   }
@@ -81,7 +87,8 @@ export function useWca(id: string | null): WcaProfile | null {
     const saved = readSaved()
     const mine = saved && saved.id === id ? saved : null
     setProfile(mine)
-    if (mine && Date.now() - mine.fetchedAt < FRESH_MS) return
+    // Profiles saved before podiums and records were kept are fetched again.
+    if (mine?.medals && Date.now() - mine.fetchedAt < FRESH_MS) return
     let live = true
     fetchProfile(id)
       .then((p) => {

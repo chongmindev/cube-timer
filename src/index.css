@@ -464,6 +464,22 @@ kbd {
   font-size: 21cqh;
 }
 
+/* A space bar mark under the time, for keyboards only. */
+.space-key {
+  position: absolute;
+  bottom: 22%;
+  width: 14cqh;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+@media not ((hover: hover) and (pointer: fine)) {
+  .space-key {
+    display: none;
+  }
+}
+
 .dial[data-phase='holding'] .disc {
   background: var(--red);
   border-color: var(--red);
@@ -967,7 +983,6 @@ kbd {
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1;
-  text-transform: lowercase;
 }
 
 .rename {
@@ -1092,13 +1107,47 @@ kbd {
   border-bottom-color: var(--blue);
 }
 
+.wca-glance {
+  max-width: 36rem;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.wca-glance .wca-breakdown {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* The rank table scrolls sideways on its own on narrow screens, never the page. */
+.wca-scroll {
+  overflow-x: auto;
+}
+
 .wca-table {
-  max-width: 32rem;
+  min-width: 36rem;
+  max-width: none;
   margin-top: 0.5rem;
 }
 
-.wca-table thead th:first-child {
+.wca-table td {
+  padding-left: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.wca-table thead th:first-child,
+.wca-table thead tr:first-child th {
   text-align: left;
+}
+
+.wca-table thead tr:first-child th {
+  padding-left: 1.25rem;
+}
+
+/* A little room before each time so the single and average groups read apart. */
+.wca-table td.wca-time {
+  padding-left: 1.25rem;
+  font-size: 1.15rem;
 }
 
 a.text-button {

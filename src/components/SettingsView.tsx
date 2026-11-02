@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { Fragment, useRef, useState, type ReactNode } from 'react'
 import { EVENTS } from '../lib/events'
 import { formatMs } from '../lib/format'
 import { useStore, type RunningDisplay, type State, type Theme } from '../lib/store'
@@ -29,7 +29,7 @@ function Choice<T extends string | number>({
 }) {
   return (
     <fieldset className="segmented">
-      <legend className="sr-only">{name}</legend>
+      <legend className="sr-only">{name[0].toUpperCase() + name.slice(1)}</legend>
       {options.map((o) => (
         <label key={String(o.value)} className={value === o.value ? 'is-on' : undefined}>
           <input type="radio" name={name} checked={value === o.value} onChange={() => onChange(o.value)} />
@@ -70,7 +70,7 @@ export function SettingsView() {
       const count = parsed.sessions.reduce((n, x) => n + x.solves.length, 0)
       setImportMessage(`Imported ${parsed.sessions.length} sessions and ${count} solves.`)
     } catch {
-      setImportMessage('That file is not a thistle export. Choose a .json file made with Export.')
+      setImportMessage('That file is not a Thistle export. Choose a .json file made with Export.')
     }
   }
 
@@ -200,6 +200,13 @@ export function SettingsView() {
 }
 
 const official = (cs?: number) => (cs ? formatMs(cs * 10, 2) : '-')
+/** "2 gold, 1 bronze": only the kinds there are some of. */
+const breakdown = (counts: Record<string, number>) =>
+  Object.entries(counts)
+    .filter(([, n]) => n > 0)
+    .map(([kind, n]) => `${n} ${kind}`)
+    .join(', ')
+const rank = (n?: number) => (n ? n.toLocaleString() : '-')
 
 function WcaSection({ wcaId, onChange }: { wcaId: string | null; onChange: (id: string | null) => void }) {
   const profile = useWca(wcaId)
@@ -209,7 +216,7 @@ function WcaSection({ wcaId, onChange }: { wcaId: string | null; onChange: (id: 
 
   const connect = async () => {
     const id = draft.trim().toUpperCase()
-    if (!WCA_ID.test(id)) return setMessage('A WCA ID looks like 2009ZEMD01: a year, four letters, two digits.')
+    if (!WCA_ID.test(id)) return setMessage('A WCA ID looks like 2019MINC02: a year, four letters, two digits.')
     setBusy(true)
     setMessage(null)
     try {
@@ -236,7 +243,7 @@ function WcaSection({ wcaId, onChange }: { wcaId: string | null; onChange: (id: 
             title={profile ? profile.name : wcaId}
             detail={
               profile
-                ? `${profile.id}, ${profile.country}, ${profile.competitions} competition${profile.competitions === 1 ? '' : 's'}`
+                ? `${profile.id}, ${profile.country}`
                 : 'Loading official results'
             }
           >
@@ -257,30 +264,75 @@ function WcaSection({ wcaId, onChange }: { wcaId: string | null; onChange: (id: 
               </button>
             </div>
           </Row>
+          {profile?.medals && (
+            <dl className="glance wca-glance">
+              <div>
+                <dt>Competitions</dt>
+                <dd>{profile.competitions}</dd>
+              </div>
+              <div>
+                <dt>Podiums</dt>
+                <dd>{profile.medals.gold + profile.medals.silver + profile.medals.bronze}</dd>
+                {breakdown(profile.medals) && <dd className="wca-breakdown">{breakdown(profile.medals)}</dd>}
+              </div>
+              <div>
+                <dt>Records</dt>
+                <dd>{profile.recordsSet.national + profile.recordsSet.continental + profile.recordsSet.world}</dd>
+                {breakdown(profile.recordsSet) && <dd className="wca-breakdown">{breakdown(profile.recordsSet)}</dd>}
+              </div>
+            </dl>
+          )}
           {events.length > 0 && (
-            <table className="stat-table wca-table">
-              <thead>
-                <tr>
-                  <th scope="col">Event</th>
-                  <th scope="col">Single</th>
-                  <th scope="col">Average</th>
-                  <th scope="col">World rank</th>
-                </tr>
-              </thead>
-              <tbody>
-                {events.map((e) => {
-                  const r = profile!.records[e.id]
-                  return (
-                    <tr key={e.id}>
-                      <th scope="row">{e.name}</th>
-                      <td>{official(r.single?.best)}</td>
-                      <td>{official(r.average?.best)}</td>
-                      <td className="muted">{r.single?.worldRank ?? '-'}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <div className="wca-scroll">
+              <table className="stat-table wca-table">
+                <thead>
+                  <tr>
+                    <td />
+                    <th scope="colgroup" colSpan={4}>
+                      Single
+                    </th>
+                    <th scope="colgroup" colSpan={4}>
+                      Average
+                    </th>
+                  </tr>
+                  <tr>
+                    <th scope="col">Event</th>
+                    {[0, 1].map((k) => (
+                      <Fragment key={k}>
+                        <th scope="col">Time</th>
+                        <th scope="col" title="National rank">
+                          NR
+                        </th>
+                        <th scope="col" title="Continental rank">
+                          CR
+                        </th>
+                        <th scope="col" title="World rank">
+                          WR
+                        </th>
+                      </Fragment>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.map((e) => {
+                    const r = profile!.records[e.id]
+                    return (
+                      <tr key={e.id}>
+                        <th scope="row">{e.name}</th>
+                        {[r.single, r.average].map((x, k) => (
+                          <Fragment key={k}>
+                            <td className="wca-time">{official(x?.best)}</td>
+                            <td className="muted">{rank(x?.countryRank)}</td>
+                            <td className="muted">{rank(x?.continentRank)}</td>
+                            <td className="muted">{rank(x?.worldRank)}</td>
+                          </Fragment>
+                        ))}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       ) : (
@@ -298,7 +350,7 @@ function WcaSection({ wcaId, onChange }: { wcaId: string | null; onChange: (id: 
                 setDraft(e.target.value)
                 setMessage(null)
               }}
-              placeholder="2009ZEMD01"
+              placeholder="2019MINC02"
               maxLength={10}
               spellCheck={false}
               autoComplete="off"

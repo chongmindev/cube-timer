@@ -16,6 +16,8 @@ import { Cube3D } from './Cube3D'
 import { LastLayerCase } from './FaceletNet'
 import { COLORS } from './ScrambleNet'
 
+const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
+
 const FACE_FOR_COLOR = ['U', 'R', 'F', 'D', 'L', 'B'] as const
 const OPPOSITE = [3, 4, 5, 0, 1, 2]
 const STAGE_TITLE = { hold: 'How you held it', cross: 'Cross', f2l: 'F2L', oll: 'OLL', pll: 'PLL', done: 'Solved' }
@@ -214,8 +216,8 @@ export function ReconstructView({
                   aria-pressed={viewing === i}
                   title="Show and edit this step"
                 >
-                  <span className="muted">{s.label || 'step'}</span>
-                  <span className="recon-moves">{s.moves || 'no rotation'}</span>
+                  <span className="muted">{capitalize(s.label || 'step')}</span>
+                  <span className="recon-moves">{s.moves || 'No rotation'}</span>
                   <span className="muted">{s.moves ? parseAlg(s.moves)!.filter((m) => !/^[xyz]/.test(m)).length : ''}</span>
                 </button>
                 {editing === i && draftCheck && (

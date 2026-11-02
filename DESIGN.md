@@ -1,6 +1,6 @@
 # Design
 
-thistle, a cube timer, follows the Bauhaus: primary colors, three geometric forms, heavy black rules, and one geometric typeface. A speedcube is already a Bauhaus object (a grid of flat primary-colored squares), so the style comes from the subject rather than being pasted on.
+Thistle, a cube timer, follows the Bauhaus: primary colors, three geometric forms, heavy black rules, and one geometric typeface. A speedcube is already a Bauhaus object (a grid of flat primary-colored squares), so the style comes from the subject rather than being pasted on.
 
 The rule behind every decision: **form follows function.** Nothing is decoration. Every color, shape and line encodes something, and if it stops meaning something it gets removed.
 
@@ -25,14 +25,14 @@ The rule behind every decision: **form follows function.** Nothing is decoration
 | Use | Size | Weight |
 | --- | --- | --- |
 | Time in the circle | 30% of the circle's height (21% for times of 6 characters or more) | 400 |
-| Page title (sessions, settings) | clamp(2.5rem, 6vw, 4.25rem), lowercase | 700 |
+| Page title (sessions, settings) | clamp(2.5rem, 6vw, 4.25rem) | 700 |
 | Event and session pickers | 1.4rem | 700 |
 | Scramble | clamp(1.2rem, 2.1vw, 1.65rem), wide word spacing | 450 |
 | Stat values | 1.6rem | 500 |
 | Body | 1.0625rem | 400 |
 | Labels | 0.85rem, muted | 500 |
 
-Page titles are set lowercase, a nod to Herbert Bayer's universal alphabet. Everything else is sentence case. No all-caps labels anywhere.
+Everything is sentence case, names capitalized, and cubing notation as cubers write it (ao5, mo3, R U2). No all-caps labels anywhere.
 
 ## Color
 
@@ -59,7 +59,7 @@ Green is the one color that isn't a Bauhaus primary. It stays because every cube
 
 ## Name
 
-**thistle**, after Morwen Thistlethwaite, whose 1981 algorithm first showed any 3x3 position can be solved in at most 52 moves. Cubers who know the algorithm catch the nod; everyone else hears a plain, soft word. It is always set lowercase like the page titles, with "cube timer" beside it in muted regular weight wherever there is room (header, share card, page title), so the name never has to explain itself.
+**Thistle**, after Morwen Thistlethwaite, whose 1981 algorithm first showed any 3x3 position can be solved in at most 52 moves. Cubers who know the algorithm catch the nod; everyone else hears a plain, soft word. It is capitalized like any name, with "cube timer" beside it in muted regular weight wherever there is room (header, share card, page title), so the name never has to explain itself.
 
 ## Logo
 
@@ -98,10 +98,10 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 - **Menus:** 3px ink border, no shadow. The hovered row turns yellow; the selected row has the square.
 - **Solve panel:** slides in from the right (from the bottom on phones), with the time huge and a heavy rule under it.
 - **Sharing a solve:** the solve panel has a Share section with Text or Image (Text first, since it pastes anywhere).
-  - **Text:** an emoji header (🟨🟥🟦 event: time), ▲ New personal best when it is one, ao5 and ao12, a bar chart of the last 12 solves made of ▁ to █ characters (taller is slower, ✕ for DNF), the scramble, and "timed with thistle". Shown in a preview with a yellow rule on its left, then Copy text.
+  - **Text:** an emoji header (🟨🟥🟦 event: time), ▲ New personal best when it is one, ao5 and ao12, a bar chart of the last 12 solves made of ▁ to █ characters (taller is slower, ✕ for DNF), the scramble, and "Timed with Thistle". Shown in a preview with a yellow rule on its left, then Copy text.
   - **Image:** a 1080x1350 (4:5) poster drawn on a canvas, with Copy image and Save image. Same rules as the app: logo and date over a heavy rule, the event name big and left aligned, the time in a yellow circle (red for a DNF) set off-center to the right, the yellow triangle and "Personal best" when it is one, then ao5, ao12 and the solve number in ruled cells, and the scramble along the bottom.
 - **Scramble preview:** for cubes (2x2 to 7x7, OH, BLD) an unfolded net drawn by the app: square stickers with no rounding, set into solid black face blocks, in the WCA scheme (white top, green front) using the app's own red, yellow, blue and green with green lightened to `#29a35a` and a vivid orange `#ff7300` that still sits clearly between red and yellow. Stickers come from `src/lib/cubeState.ts`, a small simulator that applies the scramble. Other puzzles still use cubing.js's 2D view until they get the same treatment.
-- **Typing mode:** the `T` toggle swaps the clock for a text field inside the same circle. The circle turns blue while the field has focus and red when the entry isn't a time. Plain digits use the cubing shorthand (`1234` is 12.34), a trailing `+` adds two seconds, and `DNF` marks a DNF. Inspection is hidden in this mode.
+- **Typing mode:** the Typing toggle swaps the clock for a text field inside the same circle. The circle turns blue while the field has focus and red when the entry isn't a time. Plain digits use the cubing shorthand (`1234` is 12.34), a trailing `+` adds two seconds, and `DNF` marks a DNF. Inspection is hidden in this mode.
 - **Reconstruction:** three columns like the timer: a 3D cube from cubing.js, repainted in the scramble preview's sticker colors and following light and dark mode (drawn from how you held it, white top and green front before that; the hidden back, left and bottom stickers float just off those faces so every piece shows, and you can drag to turn it), the step list (label, moves, move count), and suggestions with one moves field. Suggestion rows turn yellow on hover like menu rows; the chosen pair gets the black square, and the cube greys out every piece but that pair and the centers. What you type previews on the cube live, with Play these moves to watch them turn. Clicking an added step shows the cube at that step, plays it, and opens its moves under the row to edit (the cube follows as you type) or delete; saving relabels the steps after it, and Play solve replays the whole reconstruction from the scramble; and a line under the field says what it solves or what it breaks, in red when something's wrong.
 - **Daily streak:** in the top bar after the wordmark: the day count plus seven short bars for the last week (ink for a day with a solve, hairline for none, today's bar taller and red once solved). A streak still waiting on today's solve shows its count in muted grey. Bars are rules, not squares, so they don't borrow the square's meaning.
 - **Timer toggles:** on/off options on the timer screen (Inspection, with its `I` shortcut shown as a muted key hint) use the same black square as navigation: square shown means on.

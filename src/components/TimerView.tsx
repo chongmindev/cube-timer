@@ -87,23 +87,6 @@ export function TimerView({
     if (solving) setNotice(null)
   }, [solving])
 
-  // I toggles inspection and T toggles typing whenever the timer is idle.
-  useEffect(() => {
-    if (openId || menuOpen || timer.phase !== 'idle') return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return
-      const key = e.key.toLowerCase()
-      if (key === 'i' && !settings.typing) {
-        dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })
-      } else if (key === 't') {
-        e.preventDefault() // keep the T out of the field that is about to appear
-        dispatch({ type: 'updateSettings', patch: { typing: !settings.typing } })
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [openId, menuOpen, timer.phase, settings.inspection, settings.typing, dispatch])
-
   const submitTyped = () => {
     const result = parseTyped(typed)
     if (!result) {
@@ -211,18 +194,18 @@ export function TimerView({
               className="toggle"
               aria-pressed={settings.inspection}
               onClick={() => dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })}
-              title="Toggle 15 second inspection (I)"
+              title="15 second inspection"
             >
-              Inspection <kbd>I</kbd>
+              Inspection
             </button>
           )}
           <button
             className="toggle"
             aria-pressed={settings.typing}
             onClick={() => dispatch({ type: 'updateSettings', patch: { typing: !settings.typing } })}
-            title="Type times in instead of timing (T)"
+            title="Type times in instead of timing"
           >
-            Typing <kbd>T</kbd>
+            Typing
           </button>
           <div className="scramble-actions">
             <button className="text-button" onClick={back} disabled={!canGoBack}>
@@ -286,6 +269,11 @@ export function TimerView({
             <p className="digits" aria-live="off" data-long={display.length > 5 || undefined}>
               {display}
             </p>
+            {(timer.phase === 'idle' || timer.phase === 'stopped') && (
+              <svg className="space-key" viewBox="0 0 40 10" aria-hidden="true">
+                <path d="M1.5 0V8.5H38.5V0" />
+              </svg>
+            )}
           </div>
         )}
         <div className="under chrome">
