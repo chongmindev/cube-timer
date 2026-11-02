@@ -24,6 +24,12 @@ function Shell() {
   const [focused, setFocused] = useState(false)
   const onFocusChange = useCallback((f: boolean) => setFocused(f), [])
 
+  // The browser tab names the page you're on.
+  useEffect(() => {
+    const page = reconIndex >= 0 ? 'Reconstruct' : view === 'timer' ? 'Home' : VIEWS.find((v) => v.id === view)!.label
+    document.title = `Thistle ${page}`
+  }, [view, reconIndex])
+
   useEffect(() => {
     const theme = state.settings.theme
     if (theme === 'system') document.documentElement.removeAttribute('data-theme')

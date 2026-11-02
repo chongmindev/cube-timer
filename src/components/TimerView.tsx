@@ -220,7 +220,7 @@ export function TimerView({
           </div>
         </div>
         <p className={`scramble-text ${scrambleSize}`} aria-live="polite">
-          {scramble ?? <span className="muted">Generating scramble</span>}
+          {scramble ? <span>{scramble}</span> : <span className="muted">Generating scramble</span>}
         </p>
       </section>
 

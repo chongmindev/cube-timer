@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useUndoDelete } from '../hooks/useUndoDelete'
+import { ActivityGraph } from './ActivityGraph'
 import { EVENTS, getEvent } from '../lib/events'
 import { formatDate, formatMs, formatSolve } from '../lib/format'
 import { useStore } from '../lib/store'
@@ -31,6 +32,7 @@ export function SessionsView({
 
   return (
     <div className="sessions-view">
+      <ActivityGraph />
       <nav className="session-index" aria-label="Sessions">
         {groups.map((g) => (
           <section key={g.event.id}>

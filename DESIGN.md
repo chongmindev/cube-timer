@@ -55,7 +55,7 @@ Green is the one color that isn't a Bauhaus primary. It stays because every cube
 | --- | --- | --- |
 | Circle | The timer | The large circle on the timer screen |
 | Triangle | A personal best | Yellow triangle before your best single in the times list and before "New best" notices |
-| Square | A choice or a penalty | Small black square marks the current page and the chosen option; red square marks a +2 or DNF solve |
+| Square | A choice or a penalty | Small black square marks the current page and the chosen option (timer toggles use a blue circle); red square marks a +2 or DNF solve |
 
 ## Name
 
@@ -80,7 +80,7 @@ The circle's fill shows the timer state, so you can read it from the corner of y
 
 The overshoot when you stop is the single signature motion in the app. Don't add competing animations.
 
-Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`), kept short (120–300ms) because a timer has to feel instant. Every button pushes down 1px while pressed.
+Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`), kept short (120–300ms) because a timer has to feel instant. Every button pushes down 1px while pressed, except a times row, whose button covers the whole row.
 
 ## Rules and layout
 
@@ -104,7 +104,7 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 - **Typing mode:** the Typing toggle swaps the clock for a text field inside the same circle. The circle turns blue while the field has focus and red when the entry isn't a time. Plain digits use the cubing shorthand (`1234` is 12.34), a trailing `+` adds two seconds, and `DNF` marks a DNF. Inspection is hidden in this mode.
 - **Reconstruction:** three columns like the timer: a 3D cube from cubing.js, repainted in the scramble preview's sticker colors and following light and dark mode (drawn from how you held it, white top and green front before that; the hidden back, left and bottom stickers float just off those faces so every piece shows, and you can drag to turn it), the step list (label, moves, move count), and suggestions with one moves field. Suggestion rows turn yellow on hover like menu rows; the chosen pair gets the black square, and the cube greys out every piece but that pair and the centers. What you type previews on the cube live, with Play these moves to watch them turn. Clicking an added step shows the cube at that step, plays it, and opens its moves under the row to edit (the cube follows as you type) or delete; saving relabels the steps after it, and Play solve replays the whole reconstruction from the scramble; and a line under the field says what it solves or what it breaks, in red when something's wrong.
 - **Daily streak:** in the top bar after the wordmark: the day count plus seven short bars for the last week (ink for a day with a solve, hairline for none, today's bar taller and red once solved). A streak still waiting on today's solve shows its count in muted grey. Bars are rules, not squares, so they don't borrow the square's meaning.
-- **Timer toggles:** on/off options on the timer screen (Inspection, with its `I` shortcut shown as a muted key hint) use the same black square as navigation: square shown means on.
+- **Timer toggles:** Inspection and Typing on the timer screen are a circle beside the word: hollow and muted when off, filled blue with the word in black when on. Hover only darkens the word, so it never looks on. Both are saved like every other setting.
 - **Times header:** "Times" title with "Clear times" in red. Clearing is instant with an undo, never a pop-up.
 - **Toast:** an ink bar at the bottom, with the action in yellow ("Solve deleted. Undo").
 - **Confirming danger:** no browser pop-ups. Deleting a solve offers an undo; deleting a session or erasing data asks for a second click on the same button, which spells out what will be lost.
@@ -123,3 +123,10 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 - No second typeface.
 - No all-caps labels, no monospace labels, no decorative numbering.
 - Nothing moves unless the person did something.
+
+## Other puzzles, activity, and layout
+
+- **Other puzzle previews:** Pyraminx, Skewb, Megaminx, Square-1 and Clock are drawn by cubing.js, with its SVG colors swapped for the cube net's before drawing (`src/lib/puzzleColors.ts`). Megaminx's six extra faces use toned-down purple, cream, light blue, lime, pink and grey. Previews redraw when the theme changes.
+- **Activity:** the Sessions page opens with a year of days as small squares, darker blue for more solves (1, 5, 15 and 30 solves a day), with the current and longest streak beside it.
+- **Home page:** on desktop it is exactly the window height and never scrolls; only the times list scrolls. The scramble area has a fixed height, so the circle sits in the same place for every event; long scrambles get smaller type and the full column width instead of more lines.
+- **Tab title:** "Thistle" plus the page: Home, Sessions, Settings or Reconstruct.
