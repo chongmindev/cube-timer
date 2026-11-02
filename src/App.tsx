@@ -32,6 +32,9 @@ function Shell() {
 
   return (
     <div className={`app ${focused ? 'is-focus' : ''}`}>
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <header className="topbar chrome">
         <span className="wordmark" aria-label="cube timer">
           <Logo />
@@ -55,7 +58,7 @@ function Shell() {
         </nav>
       </header>
       {reconIndex >= 0 ? (
-        <main key={`recon-${reconId}`} className="view">
+        <main key={`recon-${reconId}`} id="main" tabIndex={-1} className="view">
           <ReconstructView
             solve={current.solves[reconIndex]}
             index={reconIndex}
@@ -66,7 +69,7 @@ function Shell() {
           />
         </main>
       ) : (
-        <main key={view} className="view">
+        <main key={view} id="main" tabIndex={-1} className="view">
           {view === 'timer' && <TimerView onFocusChange={onFocusChange} onReconstruct={setReconId} />}
           {view === 'sessions' && <SessionsView onOpenTimer={() => setView('timer')} onReconstruct={setReconId} />}
           {view === 'settings' && <SettingsView />}

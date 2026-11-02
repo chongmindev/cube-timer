@@ -12,6 +12,14 @@
   --on-color: #ffffff;
 
   --rule: 3px;
+  /* Stacking, low to high: menus, the solve sheet's scrim, the sheet, toasts, the skip link. */
+  --z-menu: 20;
+  --z-scrim: 30;
+  --z-sheet: 31;
+  --z-toast: 40;
+  --z-skip: 50;
+  /* One curve for interface feedback: quick to respond, soft to settle. */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --font: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
 
   color-scheme: light;
@@ -89,6 +97,44 @@ button:disabled {
   outline-offset: 3px;
 }
 
+/* Pressed: a 1px push, so every button answers the press, not just the hover. */
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.skip-link {
+  position: fixed;
+  z-index: var(--z-skip);
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 1rem));
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+main:focus {
+  outline: none;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li,
+small {
+  text-wrap: pretty;
+}
+
 h1,
 h2,
 h3,
@@ -150,7 +196,7 @@ kbd {
   background: currentColor;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 160ms ease;
+  transition: transform 160ms var(--ease);
 }
 
 .text-button:hover:not(:disabled)::after,
@@ -170,7 +216,7 @@ kbd {
 }
 
 .chrome {
-  transition: opacity 220ms ease;
+  transition: opacity 220ms var(--ease);
 }
 
 .app.is-focus .chrome {
@@ -256,7 +302,7 @@ kbd {
   gap: 0.45rem;
   color: var(--muted);
   font-weight: 500;
-  transition: color 140ms ease;
+  transition: color 140ms var(--ease);
 }
 
 .view-link::before,
@@ -289,7 +335,7 @@ kbd {
   flex: 1;
   display: flex;
   flex-direction: column;
-  animation: fade-in 200ms ease;
+  animation: fade-in 200ms var(--ease);
 }
 
 @keyframes fade-in {
@@ -392,8 +438,8 @@ kbd {
   border: var(--rule) solid var(--ink);
   background: transparent;
   transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
+    background-color 120ms var(--ease),
+    border-color 120ms var(--ease),
     transform 260ms cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
@@ -404,7 +450,7 @@ kbd {
   font-weight: 400;
   letter-spacing: -0.035em;
   line-height: 1;
-  transition: color 120ms ease;
+  transition: color 120ms var(--ease);
 }
 
 .digits[data-long] {
@@ -491,7 +537,7 @@ kbd {
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  animation: fade-in 300ms ease;
+  animation: fade-in 300ms var(--ease);
 }
 
 .glance {
@@ -594,7 +640,7 @@ kbd {
 }
 
 .menu-trigger .caret {
-  transition: transform 160ms ease;
+  transition: transform 160ms var(--ease);
 }
 
 .menu-trigger[aria-expanded='true'] .caret {
@@ -603,7 +649,7 @@ kbd {
 
 .menu-list {
   position: absolute;
-  z-index: 20;
+  z-index: var(--z-menu);
   top: calc(100% + 0.5rem);
   left: 0;
   min-width: 16rem;
@@ -611,7 +657,7 @@ kbd {
   overflow-y: auto;
   background: var(--paper-raised);
   border: var(--rule) solid var(--ink);
-  animation: menu-in 140ms ease;
+  animation: menu-in 140ms var(--ease);
 }
 
 @keyframes menu-in {
@@ -713,7 +759,7 @@ kbd {
 }
 
 .times tbody tr:first-child td {
-  animation: row-in 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation: row-in 280ms var(--ease);
 }
 
 @keyframes row-in {
@@ -731,14 +777,14 @@ kbd {
 .sheet-scrim {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-scrim);
   background: color-mix(in srgb, #000 30%, transparent);
-  animation: fade-in 160ms ease;
+  animation: fade-in 160ms var(--ease);
 }
 
 .sheet {
   position: fixed;
-  z-index: 31;
+  z-index: var(--z-sheet);
   top: 0;
   right: 0;
   bottom: 0;
@@ -750,7 +796,7 @@ kbd {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
-  animation: sheet-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation: sheet-in 240ms var(--ease);
 }
 
 @keyframes sheet-in {
@@ -827,7 +873,7 @@ kbd {
 
 .toast {
   position: fixed;
-  z-index: 40;
+  z-index: var(--z-toast);
   left: 50%;
   bottom: 1.5rem;
   transform: translateX(-50%);
@@ -837,7 +883,7 @@ kbd {
   background: var(--ink);
   color: var(--paper);
   padding: 0.75rem 1.25rem;
-  animation: toast-in 200ms ease;
+  animation: toast-in 200ms var(--ease);
 }
 
 .toast .text-button {

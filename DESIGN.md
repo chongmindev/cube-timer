@@ -75,6 +75,8 @@ The circle's fill shows the timer state, so you can read it from the corner of y
 
 The overshoot when you stop is the single signature motion in the app. Don't add competing animations.
 
+Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`), kept short (120–300ms) because a timer has to feel instant. Every button pushes down 1px while pressed.
+
 ## Rules and layout
 
 - `--rule: 3px` solid ink is the structural line. It separates the header from the page and the side column from the main column, and it sits under table headers and section titles.
