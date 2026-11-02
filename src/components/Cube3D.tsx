@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { TwistyPlayer } from 'cubing/twisty'
 import type { Pair } from '../lib/recon/cube'
+import type { Face } from '../lib/cubeState'
+import { COLORS } from './ScrambleNet'
 
 // cubing.js piece order for the 3x3, by home position (white top, green front).
 const EDGES = ['UF', 'UR', 'UB', 'UL', 'DF', 'DR', 'DB', 'DL', 'FR', 'FL', 'BR', 'BL']
@@ -10,19 +12,43 @@ const HOME = 'URFDLB'
 
 const FULL = 'EDGES:------------,CORNERS:--------,CENTERS:------'
 
-// cubing.js's orange (#ff9900) reads close to yellow; swap in the app's orange (#ff7300).
-const ORANGE_G = 0x73 / 255
+// cubing.js's own sticker colors, by face. They're swapped for the app's (the same ones the
+// scramble picture uses), so the cube matches everywhere and follows light and dark mode.
+const STOCK: Record<Face, number> = { U: 0xffffff, L: 0xff9900, F: 0x00ff00, R: 0xff0000, B: 0x2266ff, D: 0xffff00 }
 
-type Mesh = { material?: { color?: { r: number; g: number; b: number } } | { color?: { r: number; g: number; b: number } }[] }
+type Rgb = { r: number; g: number; b: number }
+type Mesh = { material?: { color?: Rgb } | { color?: Rgb }[] }
+type Root = { traverse: (fn: (o: Mesh) => void) => void }
 
-function recolorOrange(root: { traverse: (fn: (o: Mesh) => void) => void }) {
+const near = (c: Rgb, hex: number) =>
+  Math.abs(c.r - ((hex >> 16) & 255) / 255) < 0.01 &&
+  Math.abs(c.g - ((hex >> 8) & 255) / 255) < 0.01 &&
+  Math.abs(c.b - (hex & 255) / 255) < 0.01
+
+/** Finds each face's sticker colors in the scene, once, before any are changed. */
+function stickerColors(root: Root): [Face, Rgb][] {
+  const found = new Map<Rgb, Face>()
   root.traverse((o) => {
     for (const m of [o.material].flat()) {
       const c = m?.color
-      if (c && c.r > 0.99 && Math.abs(c.g - 0.6) < 0.01 && c.b < 0.01) c.g = ORANGE_G
+      const face = c && (Object.keys(STOCK) as Face[]).find((f) => near(c, STOCK[f]))
+      if (c && face) found.set(c, face)
     }
   })
+  return [...found].map(([c, f]) => [f, c])
 }
+
+/** The app's color for a face as 0-1 channels; theme colors are read from the page. */
+function appColor(face: Face): Rgb {
+  let css = COLORS[face]
+  const v = /^var\((--[\w-]+)\)$/.exec(css)
+  if (v) css = getComputedStyle(document.documentElement).getPropertyValue(v[1]).trim()
+  const n = parseInt(css.replace('#', ''), 16)
+  return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 }
+}
+
+// Colors are shown as stored (no color-space conversion), so the hex values go in as-is.
+const paint = (colors: [Face, Rgb][]) => colors.forEach(([f, c]) => Object.assign(c, appColor(f)))
 
 const same = (name: string, faces: string) => name.length === faces.length && [...faces].every((f) => name.includes(f))
 
@@ -67,10 +93,23 @@ export function Cube3D({
     })
     player.current = p
     host.current?.appendChild(p)
-    p.experimentalCurrentThreeJSPuzzleObject().then((root) =>
-      recolorOrange(root as unknown as Parameters<typeof recolorOrange>[0]),
-    )
+    // Repaint when the theme changes, from the app's setting or the system's.
+    let colors: [Face, Rgb][] = []
+    const repaint = () => {
+      paint(colors)
+      p.experimentalCurrentVantages().then((vs) => [...vs].forEach((v) => v.scheduleRender()))
+    }
+    p.experimentalCurrentThreeJSPuzzleObject().then((root) => {
+      colors = stickerColors(root as unknown as Root)
+      paint(colors)
+    })
+    const themeAttr = new MutationObserver(repaint)
+    themeAttr.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    const system = matchMedia('(prefers-color-scheme: dark)')
+    system.addEventListener('change', repaint)
     return () => {
+      themeAttr.disconnect()
+      system.removeEventListener('change', repaint)
       p.remove()
       player.current = null
     }
