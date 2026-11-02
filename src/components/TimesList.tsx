@@ -18,10 +18,6 @@ export function TimesList({
   const ao5 = useMemo(() => rolling(solves, 5), [solves])
   const ao12 = useMemo(() => rolling(solves, 12), [solves])
 
-  if (solves.length === 0) {
-    return <p className="times-empty">Your solves show up here. Hold space to start.</p>
-  }
-
   return (
     <table className="times">
       <thead>

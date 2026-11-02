@@ -6,6 +6,7 @@ import { EVENTS, getEvent } from '../lib/events'
 import { formatMs, formatSolve, parseTyped, uid } from '../lib/format'
 import { useStore } from '../lib/store'
 import { effective, sessionStats, type Penalty } from '../lib/stats'
+import { useWca } from '../lib/wca'
 import { CubePreview } from './CubePreview'
 import { Menu } from './Menu'
 import { Shape } from './Shape'
@@ -22,6 +23,10 @@ export function TimerView({
   const { state, current, dispatch } = useStore()
   const { settings } = state
   const event = getEvent(current.event)
+  const wca = useWca(state.settings.wcaId)
+  const officialRecord = wca?.records[event.id]
+  const officialBest = officialRecord?.single ? formatMs(officialRecord.single.best * 10, 2) : null
+  const officialAverage = officialRecord?.average ? formatMs(officialRecord.average.best * 10, 2) : null
   const { scramble, advance, back, canGoBack } = useScramble(current.event)
   const { remove, clear, toast } = useUndoDelete()
 
@@ -303,6 +308,14 @@ export function TimerView({
               <dt>Best</dt>
               <dd>{formatMs(stats.best, settings.decimals)}</dd>
             </div>
+            {officialBest && (
+              <div>
+                <dt>WCA</dt>
+                <dd title={`Official best single on the WCA${officialAverage ? `; average ${officialAverage}` : ''}`}>
+                  {officialBest}
+                </dd>
+              </div>
+            )}
             <div>
               <dt>Solves</dt>
               <dd>{stats.count}</dd>
@@ -331,19 +344,8 @@ export function TimerView({
               </button>
             </div>
           )}
-          {settings.typing && (typedError || !last) && (
-            <p className={`hint ${typedError ? 'is-error' : ''}`}>
-              {typedError ? "That isn't a time. " : ''}Type a time and press Enter. 1234 means 12.34; end with + for
-              a +2, or type DNF.
-            </p>
-          )}
-          {!last && timer.phase === 'idle' && !settings.typing && (
-            <p className="hint">
-              {settings.inspection
-                ? 'Tap space to start the 15 second inspection, then hold and let go to start.'
-                : 'Hold space until the time turns green, then let go to start.'}{' '}
-              On a phone, hold the time.
-            </p>
+          {settings.typing && typedError && (
+            <p className="hint is-error">That isn't a time. 1234 means 12.34; end with + for a +2, or type DNF.</p>
           )}
         </div>
       </section>

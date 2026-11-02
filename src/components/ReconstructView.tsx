@@ -174,8 +174,7 @@ export function ReconstructView({
                   ? 'As scrambled: white top, green front.'
                   : typed
                     ? 'After the moves you’re typing.'
-                    : 'From how you held it, after the last step.'}{' '}
-            Drag to look around; the floating stickers are the back, left and bottom.
+                    : 'From how you held it, after the last step.'}
           </p>
           <div className="recon-step-actions">
             {viewing === null && typed && (
@@ -281,7 +280,6 @@ export function ReconstructView({
               <h2>Reconstruction</h2>
               <pre className="share-text">{lines.join('\n')}</pre>
               <p>{summary}</p>
-              <p className="muted">Saved to this solve. It’s included when you share the solve as text.</p>
               <button className="text-button" onClick={onClose}>
                 Done
               </button>
@@ -438,7 +436,7 @@ export function ReconstructView({
                         : 'Held as scrambled.'
                       : check
                         ? [check.label && `Solves the ${check.label}.`, check.warning].filter(Boolean).join(' ')
-                        : 'Edit the moves freely: add setup moves, cut or swap turns.'}
+                        : ''}
                 </p>
                 <button
                   type="submit"

@@ -158,11 +158,11 @@ export function SolveDetail({
                 <p className="muted">{data.recon!.summary}</p>
               </>
             ) : (
-              <p className="muted">
-                {solve.recon
-                  ? `Draft, ${solve.recon.steps.length} step${solve.recon.steps.length === 1 ? '' : 's'} in.`
-                  : 'Work out what you did, step by step, while you still remember it.'}
-              </p>
+              solve.recon && (
+                <p className="muted">
+                  Draft, {solve.recon.steps.length} step{solve.recon.steps.length === 1 ? '' : 's'} in.
+                </p>
+              )
             )}
           </section>
         )}

@@ -9,7 +9,8 @@ The rule behind every decision: **form follows function.** Nothing is decoration
 1. **The timer is the hero.** One big circle with the time inside it. Everything else is quieter.
 2. **Color is information, not mood.** The primaries appear only when they mean something (see the color table). Most of the screen is paper and ink.
 3. **One shape, one meaning.** Circle, triangle and square each have a job, and only that job.
-4. **Structure with rules, not boxes.** Sections are divided by thick black lines and whitespace. No cards, no rounded corners, no shadows, no pills.
+4. **Structure with few rules, not boxes.** A handful of heavy black lines frame the page; everything inside is grouped by whitespace and weight. No cards, no rounded corners, no shadows, no pills.
+7. **No instructions the screen can show for itself.** No "press space to start" or "your solves show up here": an empty table with its headers, or the control itself, says enough. Text is for facts and for errors.
 5. **Get out of the way while solving.** Focus mode fades everything except the circle and the time.
 6. **Motion answers the person.** Things move when you press, release, stop, open or choose. Nothing moves on its own.
 
@@ -40,7 +41,7 @@ Page titles are set lowercase, a nod to Herbert Bayer's universal alphabet. Ever
 | `--paper` | `#ffffff` | `#1a1a1a` | Background (pure white; no grey or cream) |
 | `--ink` | `#000000` | `#f2f2ee` | Text and rules |
 | `--muted` | `#5d5d58` | `#9b9b94` | Labels, secondary text |
-| `--hairline` | `#cfcfc8` | `#3a3a37` | Row dividers inside tables |
+| `--hairline` | `#cfcfc8` | `#3a3a37` | Faint marks: empty streak days, the typing placeholder, a loading share card |
 | `--red` | `#d7261e` | `#ef4a3c` | Holding (not ready yet), penalties, destructive actions |
 | `--green` | `#1d8a4b` | `#35b86b` | Ready: let go to start. Used nowhere else |
 | `--yellow` | `#f5c400` | `#ffd21a` | Solving, personal bests, hover in menus |
@@ -83,9 +84,9 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 
 ## Rules and layout
 
-- `--rule: 3px` solid ink is the structural line. It separates the header from the page and the side column from the main column, and it sits under table headers and section titles.
-- 1px hairlines separate rows inside a table. 1px ink lines separate the stat cells.
-- Desktop timer screen: three columns. Scramble preview on the left, times on the right, both the same width (12 to 18rem) so the circle sits in the true center of the page. The center column holds the pickers and scramble (centered), then the circle, then the stats. Heavy rules split the columns.
+- `--rule: 3px` solid ink is the structural line, used sparingly: under the top bar, between the side columns and the timer, above the stats, at the solve panel's edge, under the time in that panel, and under table headers so columns line up. Section headings and table rows have no lines; spacing separates them.
+- Text fields are an underline (`--rule`), which is what makes them read as fields.
+- Desktop timer screen: three columns. Scramble preview on the left, times on the right, both the same width (14 to 22rem) so the circle sits in the true center of the page. The center column holds the pickers and scramble (centered), then the circle, then the stats. Heavy rules split the columns.
 - Under 860px everything stacks into one column (scramble, circle, times, preview) and the heavy rules turn horizontal.
 - Under 420px the header shows just the cube logo.
 - Square corners everywhere. The circle is the only curve.

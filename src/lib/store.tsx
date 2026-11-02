@@ -22,6 +22,7 @@ export interface Settings {
   theme: Theme
   showPreview: boolean
   typing: boolean // enter times by keyboard instead of timing
+  wcaId: string | null
 }
 
 export interface State {
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   showPreview: true,
   typing: false,
+  wcaId: null,
 }
 
 const STORAGE_KEY = 'cube-timer:v1'

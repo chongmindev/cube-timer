@@ -1,5 +1,8 @@
 import { useRef, useState, type ReactNode } from 'react'
+import { EVENTS } from '../lib/events'
+import { formatMs } from '../lib/format'
 import { useStore, type RunningDisplay, type State, type Theme } from '../lib/store'
+import { WCA_ID, fetchProfile, save, useWca } from '../lib/wca'
 
 function Row({ title, detail, children }: { title: string; detail?: string; children: ReactNode }) {
   return (
@@ -98,7 +101,7 @@ export function SettingsView() {
             onChange={(v) => set({ holdMs: v })}
           />
         </Row>
-        <Row title="While solving, show" detail="Hiding the running time helps some people stay calm.">
+        <Row title="While solving, show">
           <Choice<RunningDisplay>
             name="running"
             value={s.runningDisplay}
@@ -133,7 +136,7 @@ export function SettingsView() {
             onChange={(v) => set({ focusMode: v === 'on' })}
           />
         </Row>
-        <Row title="Scramble preview" detail="A flat picture of the puzzle after the scramble.">
+        <Row title="Scramble preview">
           <Choice
             name="preview"
             value={s.showPreview ? 'on' : 'off'}
@@ -154,6 +157,8 @@ export function SettingsView() {
           />
         </Row>
       </section>
+
+      <WcaSection wcaId={s.wcaId} onChange={(wcaId) => set({ wcaId })} />
 
       <section>
         <h2>Your data</h2>
@@ -191,5 +196,121 @@ export function SettingsView() {
         {importMessage && <p className="notice">{importMessage}</p>}
       </section>
     </div>
+  )
+}
+
+const official = (cs?: number) => (cs ? formatMs(cs * 10, 2) : '-')
+
+function WcaSection({ wcaId, onChange }: { wcaId: string | null; onChange: (id: string | null) => void }) {
+  const profile = useWca(wcaId)
+  const [draft, setDraft] = useState('')
+  const [message, setMessage] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const connect = async () => {
+    const id = draft.trim().toUpperCase()
+    if (!WCA_ID.test(id)) return setMessage('A WCA ID looks like 2009ZEMD01: a year, four letters, two digits.')
+    setBusy(true)
+    setMessage(null)
+    try {
+      const p = await fetchProfile(id)
+      if (!p) return setMessage(`No WCA profile has the ID ${id}.`)
+      save(p)
+      onChange(p.id)
+      setDraft('')
+    } catch {
+      setMessage('Couldn’t reach the WCA. Check your connection and try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const events = profile ? EVENTS.filter((e) => profile.records[e.id]) : []
+
+  return (
+    <section>
+      <h2>WCA profile</h2>
+      {wcaId ? (
+        <>
+          <Row
+            title={profile ? profile.name : wcaId}
+            detail={
+              profile
+                ? `${profile.id}, ${profile.country}, ${profile.competitions} competition${profile.competitions === 1 ? '' : 's'}`
+                : 'Loading official results'
+            }
+          >
+            <div className="data-actions">
+              {profile && (
+                <a className="text-button" href={profile.url} target="_blank" rel="noreferrer">
+                  Open on the WCA
+                </a>
+              )}
+              <button
+                className="text-button danger"
+                onClick={() => {
+                  save(null)
+                  onChange(null)
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
+          </Row>
+          {events.length > 0 && (
+            <table className="stat-table wca-table">
+              <thead>
+                <tr>
+                  <th scope="col">Event</th>
+                  <th scope="col">Single</th>
+                  <th scope="col">Average</th>
+                  <th scope="col">World rank</th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.map((e) => {
+                  const r = profile!.records[e.id]
+                  return (
+                    <tr key={e.id}>
+                      <th scope="row">{e.name}</th>
+                      <td>{official(r.single?.best)}</td>
+                      <td>{official(r.average?.best)}</td>
+                      <td className="muted">{r.single?.worldRank ?? '-'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </>
+      ) : (
+        <Row title="WCA ID" detail="Shows your official results here and beside your best on the timer.">
+          <form
+            className="wca-connect"
+            onSubmit={(e) => {
+              e.preventDefault()
+              connect()
+            }}
+          >
+            <input
+              value={draft}
+              onChange={(e) => {
+                setDraft(e.target.value)
+                setMessage(null)
+              }}
+              placeholder="2009ZEMD01"
+              maxLength={10}
+              spellCheck={false}
+              autoComplete="off"
+              aria-label="WCA ID"
+            />
+            <button type="submit" className="text-button" disabled={busy || !draft.trim()}>
+              {busy ? 'Connecting' : 'Connect'}
+            </button>
+          </form>
+        </Row>
+      )}
+      {message && <p className="wca-message">{message}</p>}
+    </section>
   )
 }
