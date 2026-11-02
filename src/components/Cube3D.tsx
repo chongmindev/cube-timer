@@ -10,6 +10,20 @@ const HOME = 'URFDLB'
 
 const FULL = 'EDGES:------------,CORNERS:--------,CENTERS:------'
 
+// cubing.js's orange (#ff9900) reads close to yellow; swap in the app's orange (#ff7300).
+const ORANGE_G = 0x73 / 255
+
+type Mesh = { material?: { color?: { r: number; g: number; b: number } } | { color?: { r: number; g: number; b: number } }[] }
+
+function recolorOrange(root: { traverse: (fn: (o: Mesh) => void) => void }) {
+  root.traverse((o) => {
+    for (const m of [o.material].flat()) {
+      const c = m?.color
+      if (c && c.r > 0.99 && Math.abs(c.g - 0.6) < 0.01 && c.b < 0.01) c.g = ORANGE_G
+    }
+  })
+}
+
 const same = (name: string, faces: string) => name.length === faces.length && [...faces].every((f) => name.includes(f))
 
 /** Stickering that greys out everything except one F2L pair (and the centers). */
@@ -53,6 +67,9 @@ export function Cube3D({
     })
     player.current = p
     host.current?.appendChild(p)
+    p.experimentalCurrentThreeJSPuzzleObject().then((root) =>
+      recolorOrange(root as unknown as Parameters<typeof recolorOrange>[0]),
+    )
     return () => {
       p.remove()
       player.current = null
