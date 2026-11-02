@@ -1,6 +1,6 @@
 # Design
 
-cube timer follows the Bauhaus: primary colors, three geometric forms, heavy black rules, and one geometric typeface. A speedcube is already a Bauhaus object (a grid of flat primary-colored squares), so the style comes from the subject rather than being pasted on.
+thistle, a cube timer, follows the Bauhaus: primary colors, three geometric forms, heavy black rules, and one geometric typeface. A speedcube is already a Bauhaus object (a grid of flat primary-colored squares), so the style comes from the subject rather than being pasted on.
 
 The rule behind every decision: **form follows function.** Nothing is decoration. Every color, shape and line encodes something, and if it stops meaning something it gets removed.
 
@@ -56,6 +56,10 @@ Green is the one color that isn't a Bauhaus primary. It stays because every cube
 | Triangle | A personal best | Yellow triangle before your best single in the times list and before "New best" notices |
 | Square | A choice or a penalty | Small black square marks the current page and the chosen option; red square marks a +2 or DNF solve |
 
+## Name
+
+**thistle**, after Morwen Thistlethwaite, whose 1981 algorithm first showed any 3x3 position can be solved in at most 52 moves. Cubers who know the algorithm catch the nod; everyone else hears a plain, soft word. It is always set lowercase like the page titles, with "cube timer" beside it in muted regular weight wherever there is room (header, share card, page title), so the name never has to explain itself.
+
 ## Logo
 
 A cube drawn only with three primary ribbons, no outlines. Each ribbon runs along the outer row of two faces, parallel to the cube's edges, and folds around one corner: red around the top-left corner, blue around the top-right, yellow around the bottom. Where two ribbons meet they overlap like a weave, cyclically (red over blue at the top, blue over yellow at the right, yellow over red at the left), so the mark is rotationally symmetric. The middle of the cube is empty. The geometry lives in `src/lib/logoPaths.ts` and is shared by the header (`Logo.tsx`), the share card and `public/favicon.svg`. Change it in one place, then copy the paths into the favicon. Under 420px the header shows the cube without the wordmark.
@@ -93,7 +97,7 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 - **Menus:** 3px ink border, no shadow. The hovered row turns yellow; the selected row has the square.
 - **Solve panel:** slides in from the right (from the bottom on phones), with the time huge and a heavy rule under it.
 - **Sharing a solve:** the solve panel has a Share section with Text or Image (Text first, since it pastes anywhere).
-  - **Text:** an emoji header (🟨🟥🟦 event: time), ▲ New personal best when it is one, ao5 and ao12, a bar chart of the last 12 solves made of ▁ to █ characters (taller is slower, ✕ for DNF), the scramble, and "timed with cube timer". Shown in a preview with a yellow rule on its left, then Copy text.
+  - **Text:** an emoji header (🟨🟥🟦 event: time), ▲ New personal best when it is one, ao5 and ao12, a bar chart of the last 12 solves made of ▁ to █ characters (taller is slower, ✕ for DNF), the scramble, and "timed with thistle". Shown in a preview with a yellow rule on its left, then Copy text.
   - **Image:** a 1080x1350 (4:5) poster drawn on a canvas, with Copy image and Save image. Same rules as the app: logo and date over a heavy rule, the event name big and left aligned, the time in a yellow circle (red for a DNF) set off-center to the right, the yellow triangle and "Personal best" when it is one, then ao5, ao12 and the solve number in ruled cells, and the scramble along the bottom.
 - **Scramble preview:** for cubes (2x2 to 7x7, OH, BLD) an unfolded net drawn by the app: square stickers with no rounding, set into solid black face blocks, in the WCA scheme (white top, green front) using the app's own red, yellow, blue and green with green lightened to `#29a35a` and a vivid orange `#ff7300` that still sits clearly between red and yellow. Stickers come from `src/lib/cubeState.ts`, a small simulator that applies the scramble. Other puzzles still use cubing.js's 2D view until they get the same treatment.
 - **Typing mode:** the `T` toggle swaps the clock for a text field inside the same circle. The circle turns blue while the field has focus and red when the entry isn't a time. Plain digits use the cubing shorthand (`1234` is 12.34), a trailing `+` adds two seconds, and `DNF` marks a DNF. Inspection is hidden in this mode.

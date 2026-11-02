@@ -1,4 +1,6 @@
-# cube timer
+# thistle
+
+A cube timer, named after Morwen Thistlethwaite, whose 1981 algorithm was the first to show any 3x3 position can be solved in at most 52 moves.
 
 A speedcubing timer meant to be what csTimer should feel like: easy to navigate, calm while you solve.
 

@@ -93,7 +93,11 @@ export async function drawCard(data: CardData): Promise<HTMLCanvasElement> {
   ctx.fillStyle = C.ink
   ctx.font = font(600, 34)
   ctx.textAlign = 'left'
-  ctx.fillText('cube timer', PAD + 62, y0 - 1)
+  ctx.fillText('thistle', PAD + 62, y0 - 1)
+  const nameWidth = ctx.measureText('thistle ').width
+  ctx.font = font(400, 34)
+  ctx.fillStyle = C.muted
+  ctx.fillText('cube timer', PAD + 62 + nameWidth, y0 - 1)
   ctx.textAlign = 'right'
   ctx.font = font(400, 30)
   ctx.fillStyle = C.muted
@@ -216,6 +220,6 @@ export function cardText(d: CardData): string {
 
   lines.push('', d.scramble)
   if (d.recon) lines.push('', ...d.recon.lines, d.recon.summary)
-  lines.push('', 'timed with cube timer')
+  lines.push('', 'timed with thistle')
   return lines.join('\n')
 }

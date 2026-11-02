@@ -54,7 +54,7 @@ export function SettingsView() {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `cube-timer-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `thistle-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(a.href)
   }
@@ -67,7 +67,7 @@ export function SettingsView() {
       const count = parsed.sessions.reduce((n, x) => n + x.solves.length, 0)
       setImportMessage(`Imported ${parsed.sessions.length} sessions and ${count} solves.`)
     } catch {
-      setImportMessage('That file is not a cube timer export. Choose a .json file made with Export.')
+      setImportMessage('That file is not a thistle export. Choose a .json file made with Export.')
     }
   }
 

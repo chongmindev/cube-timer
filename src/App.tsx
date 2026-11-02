@@ -36,9 +36,11 @@ function Shell() {
         Skip to content
       </a>
       <header className="topbar chrome">
-        <span className="wordmark" aria-label="cube timer">
+        <span className="wordmark" aria-label="thistle, cube timer">
           <Logo />
-          <span className="wordmark-text">cube timer</span>
+          <span className="wordmark-text">
+            thistle <span className="wordmark-sub">cube timer</span>
+          </span>
         </span>
         <StreakMark />
         <nav className="views" aria-label="Main">

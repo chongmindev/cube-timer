@@ -242,6 +242,12 @@ kbd {
   letter-spacing: -0.01em;
 }
 
+.wordmark-sub {
+  margin-left: 0.3em;
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .logo {
   display: inline-flex;
   gap: 3px;
