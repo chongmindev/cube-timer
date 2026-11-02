@@ -10,6 +10,7 @@ import { useWca } from '../lib/wca'
 import { CubePreview } from './CubePreview'
 import { Menu } from './Menu'
 import { Shape } from './Shape'
+import { ImportScrambles } from './ImportScrambles'
 import { SolveDetail } from './SolveDetail'
 import { TimesList } from './TimesList'
 
@@ -27,11 +28,12 @@ export function TimerView({
   const officialRecord = wca?.records[event.id]
   const officialBest = officialRecord?.single ? formatMs(officialRecord.single.best * 10, 2) : null
   const officialAverage = officialRecord?.average ? formatMs(officialRecord.average.best * 10, 2) : null
-  const { scramble, advance, back, canGoBack } = useScramble(current.event)
+  const { scramble, advance, back, canGoBack, imported, importScrambles, dropImported } = useScramble(current.event)
   const { remove, clear, toast } = useUndoDelete()
 
   const [openId, setOpenId] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [justSolvedId, setJustSolvedId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -74,7 +76,7 @@ export function TimerView({
   const timer = useTimer({
     holdMs: settings.holdMs,
     inspection: settings.inspection,
-    enabled: !openId && !menuOpen && !settings.typing && scramble !== null,
+    enabled: !openId && !menuOpen && !importing && !settings.typing && scramble !== null,
     onFinish,
   })
 
@@ -100,7 +102,7 @@ export function TimerView({
 
   // Quick keys for the solve that just finished.
   useEffect(() => {
-    if (openId || menuOpen || timer.phase !== 'idle' || !last || last.id !== justSolvedId) return
+    if (openId || menuOpen || importing || timer.phase !== 'idle' || !last || last.id !== justSolvedId) return
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return
       if (e.key === '2') togglePenalty('+2')
@@ -111,7 +113,7 @@ export function TimerView({
       dispatch({ type: 'setPenalty', solveId: last.id, penalty: last.penalty === p ? 'none' : p })
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [openId, menuOpen, timer.phase, last, justSolvedId, dispatch, remove])
+  }, [openId, menuOpen, importing, timer.phase, last, justSolvedId, dispatch, remove])
 
   const display = (() => {
     const d = settings.decimals
@@ -189,16 +191,16 @@ export function TimerView({
               </button>
             }
           />
-          {!settings.typing && (
-            <button
-              className="toggle"
-              aria-pressed={settings.inspection}
-              onClick={() => dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })}
-              title="15 second inspection"
-            >
-              Inspection
-            </button>
-          )}
+          {/* Kept in place while typing, so the row never reflows; typed times have no inspection. */}
+          <button
+            className="toggle"
+            aria-pressed={settings.inspection && !settings.typing}
+            disabled={settings.typing}
+            onClick={() => dispatch({ type: 'updateSettings', patch: { inspection: !settings.inspection } })}
+            title={settings.typing ? 'Inspection is off while typing times' : '15 second inspection'}
+          >
+            Inspection
+          </button>
           <button
             className="toggle"
             aria-pressed={settings.typing}
@@ -207,17 +209,26 @@ export function TimerView({
           >
             Typing
           </button>
-          <div className="scramble-actions">
-            <button className="text-button" onClick={back} disabled={!canGoBack}>
-              Previous scramble
+        </div>
+        <div className="scramble-actions">
+          <button className="text-button" onClick={back} disabled={!canGoBack}>
+            Previous scramble
+          </button>
+          <button className="text-button" onClick={advance} disabled={!scramble}>
+            Next scramble
+          </button>
+          <button className="text-button" onClick={copyScramble} disabled={!scramble}>
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+          {imported ? (
+            <button className="text-button" onClick={dropImported} title="Go back to generated scrambles">
+              Imported {imported.at} of {imported.total}, stop
             </button>
-            <button className="text-button" onClick={advance} disabled={!scramble}>
-              Next scramble
+          ) : (
+            <button className="text-button" onClick={() => setImporting(true)}>
+              Import
             </button>
-            <button className="text-button" onClick={copyScramble} disabled={!scramble}>
-              {copied ? 'Copied' : 'Copy'}
-            </button>
-          </div>
+          )}
         </div>
         <p className={`scramble-text ${scrambleSize}`} aria-live="polite">
           {scramble ? <span>{scramble}</span> : <span className="muted">Generating scramble</span>}
@@ -352,6 +363,17 @@ export function TimerView({
         <TimesList solves={current.solves} decimals={settings.decimals} onOpen={setOpenId} bestId={bestId} />
       </aside>
 
+      {importing && (
+        <ImportScrambles
+          event={current.event}
+          eventName={event.name}
+          onImport={(list) => {
+            importScrambles(list)
+            setImporting(false)
+          }}
+          onClose={() => setImporting(false)}
+        />
+      )}
       {open >= 0 && (
         <SolveDetail
           solves={current.solves}
