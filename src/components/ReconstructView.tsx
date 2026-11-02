@@ -43,12 +43,13 @@ export function ReconstructView({
   // What the cube shows: null is the latest step plus what you're typing, a number is that one
   // step, and 'all' is the whole solve from the scramble.
   const [viewing, setViewing] = useState<number | 'all' | null>(null)
+  // The moves of the step being edited, while one is open.
+  const [draft, setDraft] = useState('')
 
   const scrambled = useMemo(() => apply(solvedState(), solve.scramble), [solve.scramble])
-  const current = useMemo(
-    () => steps.reduce<State>((s, step) => (step.moves.trim() ? apply(s, step.moves) : s), scrambled),
-    [steps, scrambled],
-  )
+  const after = (list: typeof steps, n = list.length) =>
+    list.slice(0, n).reduce<State>((s, step) => (step.moves.trim() ? apply(s, step.moves) : s), scrambled)
+  const current = useMemo(() => after(steps), [steps, scrambled]) // eslint-disable-line react-hooks/exhaustive-deps
   const stage = steps.length === 0 ? 'hold' : stageOf(current)
   const done = stage === 'done'
 
@@ -67,12 +68,14 @@ export function ReconstructView({
   const preview = parsed && parsed.length ? apply(current, parsed.join(' ')) : current
   const typed = parsed ? parsed.join(' ') : ''
   const upTo = (n: number) => [solve.scramble, ...steps.slice(0, n).map((s) => s.moves)].filter(Boolean).join(' ')
+  const draftParsed = draft.trim() ? parseAlg(draft) : []
+  const draftMoves = draftParsed ? draftParsed.join(' ') : ''
   const view =
     viewing === null
       ? { setup: upTo(steps.length), moves: typed }
       : viewing === 'all'
         ? { setup: solve.scramble, moves: steps.map((s) => s.moves).filter(Boolean).join(' ') }
-        : { setup: upTo(viewing), moves: steps[viewing].moves }
+        : { setup: upTo(viewing), moves: draftMoves }
   const play = (v: number | 'all' | null) => {
     setViewing(v)
     setPlayToken((t) => t + 1)
@@ -85,6 +88,32 @@ export function ReconstructView({
     setSteps(next)
     setViewing(null)
   }
+  // Steps after a changed one may now do something else, so their labels are worked out again.
+  const relabel = (list: typeof steps, from: number) => {
+    let s = after(list, from)
+    return list.map((step, i) => {
+      if (i < from) return step
+      const next = step.moves.trim() ? apply(s, step.moves) : s
+      const label = i === 0 ? step.label : describeStep(s, next).label
+      s = next
+      return { ...step, label }
+    })
+  }
+  const saveStep = (i: number) => {
+    if (draftParsed === null || (i > 0 && !draftMoves)) return
+    edit(relabel(steps.map((s, j) => (j === i ? { ...s, moves: draftMoves } : s)), i))
+  }
+  const deleteStep = (i: number) => edit(relabel(steps.filter((_, j) => j !== i), i))
+  const editing = typeof viewing === 'number' ? viewing : null
+  const draftCheck = (() => {
+    if (editing === null) return null
+    if (draftParsed === null) return { text: 'That isn’t notation the app reads.', warn: true }
+    if (editing === 0) return { text: draftMoves ? `Held with ${draftMoves}.` : 'Held as scrambled.', warn: false }
+    if (!draftMoves) return { text: 'Type the moves for this step, or delete it.', warn: true }
+    const before = after(steps, editing)
+    const c = describeStep(before, apply(before, draftMoves))
+    return { text: [c.label && `Solves the ${c.label}.`, c.warning].filter(Boolean).join(' ') || 'Later steps stay as they are.', warn: !!c.warning }
+  })()
   const check =
     stage === 'hold' || !parsed || !parsed.length ? null : describeStep(current, preview)
 
@@ -179,14 +208,53 @@ export function ReconstructView({
               <li key={i}>
                 <button
                   className={`recon-row recon-step ${viewing === i ? 'is-on' : ''}`}
-                  onClick={() => play(i)}
+                  onClick={() => {
+                    if (viewing !== i) setDraft(s.moves)
+                    play(i)
+                  }}
                   aria-pressed={viewing === i}
-                  title="Show this step on the cube"
+                  title="Show and edit this step"
                 >
                   <span className="muted">{s.label || 'step'}</span>
                   <span className="recon-moves">{s.moves || 'no rotation'}</span>
                   <span className="muted">{s.moves ? parseAlg(s.moves)!.filter((m) => !/^[xyz]/.test(m)).length : ''}</span>
                 </button>
+                {editing === i && draftCheck && (
+                  <form
+                    className="recon-input recon-edit"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      saveStep(i)
+                    }}
+                  >
+                    <input
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      placeholder={i === 0 ? 'Rotation, like z2' : 'Moves for this step'}
+                      spellCheck={false}
+                      autoComplete="off"
+                      aria-label={`Moves for your ${s.label || 'step'}`}
+                    />
+                    <p className={`recon-check ${draftCheck.warn ? 'is-warn' : ''}`}>{draftCheck.text}</p>
+                    <div className="recon-step-actions">
+                      <button
+                        type="submit"
+                        className="text-button"
+                        disabled={draftParsed === null || (i > 0 && !draftMoves) || draftMoves === s.moves}
+                      >
+                        Save step
+                      </button>
+                      <button type="button" className="text-button" onClick={() => setViewing(null)}>
+                        Cancel
+                      </button>
+                      {i > 0 && (
+                        <button type="button" className="text-button danger" onClick={() => deleteStep(i)}>
+                          Delete step
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                )}
               </li>
             ))}
             {!done && (
