@@ -8,12 +8,10 @@ export function TimesList({
   solves,
   decimals,
   onOpen,
-  bestId,
 }: {
   solves: Solve[]
   decimals: number
   onOpen: (id: string) => void
-  bestId: string | null
 }) {
   const ao5 = useMemo(() => rolling(solves, 5), [solves])
   const ao12 = useMemo(() => rolling(solves, 12), [solves])
@@ -31,11 +29,10 @@ export function TimesList({
       <tbody>
         {solves
           .map((s, i) => (
-            <tr key={s.id} className={s.id === bestId ? 'is-best' : undefined}>
+            <tr key={s.id}>
               <td className="times-index">{i + 1}</td>
               <td>
                 <button className="times-time" onClick={() => onOpen(s.id)}>
-                  {s.id === bestId && <Shape kind="triangle" className="yellow" />}
                   {s.penalty !== 'none' && <Shape kind="square" className="red" />}
                   {formatSolve(s, decimals)}
                 </button>

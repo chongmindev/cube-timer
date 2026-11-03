@@ -12,6 +12,8 @@ interface Options {
 }
 
 const INSPECTION_MS = 15000
+// After a stop, presses are ignored this long, so a bounced or doubled Space can't start the next solve.
+const COOLDOWN_MS = 600
 
 function inspectionPenalty(elapsed: number): Penalty {
   if (elapsed > INSPECTION_MS + 2000) return 'dnf'
@@ -27,6 +29,7 @@ export function useTimer({ holdMs, inspection, enabled, onFinish }: Options) {
   const holdTimer = useRef<number | undefined>(undefined)
   const startAt = useRef(0)
   const inspectAt = useRef(0)
+  const stoppedAt = useRef(-Infinity)
   const primed = useRef(false)
   const finish = useRef(onFinish)
   finish.current = onFinish
@@ -42,10 +45,12 @@ export function useTimer({ holdMs, inspection, enabled, onFinish }: Options) {
       const t = performance.now()
       const penalty = inspection ? inspectionPenalty(startAt.current - inspectAt.current) : 'none'
       setNow(t)
+      stoppedAt.current = t
       setPhase('stopped')
       finish.current(t - startAt.current, penalty)
       return
     }
+    if (performance.now() - stoppedAt.current < COOLDOWN_MS) return
     if (p === 'idle' && inspection) {
       primed.current = true
       return

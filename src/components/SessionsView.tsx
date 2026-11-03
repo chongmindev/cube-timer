@@ -137,7 +137,7 @@ export function SessionsView({
           {stats.dnfs > 0 && `, ${stats.dnfs} DNF`}
         </p>
 
-        <TimesList solves={current.solves} decimals={decimals} onOpen={setOpenId} bestId={null} />
+        <TimesList solves={current.solves} decimals={decimals} onOpen={setOpenId} />
       </article>
 
       {open >= 0 && (

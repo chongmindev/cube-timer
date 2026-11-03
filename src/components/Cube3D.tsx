@@ -93,6 +93,12 @@ export function Cube3D({
     })
     player.current = p
     host.current?.appendChild(p)
+    // cubing.js turns the cube on every move until it sees the button come up, so a missed
+    // release turns it on plain hover. Only let moves through while a button is held.
+    const onlyWhileHeld = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.buttons === 0) e.stopPropagation()
+    }
+    host.current?.addEventListener('pointermove', onlyWhileHeld, { capture: true })
     // Repaint when the theme changes, from the app's setting or the system's.
     let colors: [Face, Rgb][] = []
     const repaint = () => {
@@ -107,7 +113,9 @@ export function Cube3D({
     themeAttr.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
     const system = matchMedia('(prefers-color-scheme: dark)')
     system.addEventListener('change', repaint)
+    const el = host.current
     return () => {
+      el?.removeEventListener('pointermove', onlyWhileHeld, { capture: true })
       themeAttr.disconnect()
       system.removeEventListener('change', repaint)
       p.remove()

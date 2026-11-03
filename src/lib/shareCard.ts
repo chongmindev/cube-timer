@@ -13,8 +13,6 @@ export interface CardData {
   isBest: boolean
   solveNumber: number
   session: string
-  /** Effective times (ms, Infinity for DNF) of up to 12 solves ending with this one. */
-  recent: number[]
   /** Finished reconstruction, one line per step, plus its move count and TPS. */
   recon?: { lines: string[]; summary: string }
 }
@@ -189,34 +187,12 @@ export async function drawCard(data: CardData): Promise<HTMLCanvasElement> {
   return canvas
 }
 
-const BARS = '▁▂▃▄▅▆▇█'
-
-/** One bar per solve, taller is slower, ✕ for a DNF. */
-export function sparkline(times: number[]): string {
-  const finite = times.filter((t) => t !== Infinity)
-  if (finite.length === 0) return ''
-  const lo = Math.min(...finite)
-  const hi = Math.max(...finite)
-  return times
-    .map((t) => {
-      if (t === Infinity) return '✕'
-      const level = hi === lo ? 3 : Math.round(((t - lo) / (hi - lo)) * (BARS.length - 1))
-      return BARS[level]
-    })
-    .join('')
-}
-
-/** Text version for pasting into chats. Emoji and block characters render almost everywhere. */
+/** Plain text version for pasting into chats. */
 export function cardText(d: CardData): string {
   const time = d.penalty === '+2' ? `${d.time.replace(/\+$/, '')} (+2)` : d.time
-  const lines = [`🟨🟥🟦 ${d.event}: ${time}`]
-  if (d.isBest) lines.push('▲ New personal best')
+  const lines = [`${d.event}: ${time}`]
 
-  const stats = [d.ao5 !== '-' && `ao5 ${d.ao5}`, d.ao12 !== '-' && `ao12 ${d.ao12}`].filter(Boolean)
-  const spark = d.recent.length >= 3 ? sparkline(d.recent) : ''
-  if (stats.length || spark) lines.push('')
-  if (stats.length) lines.push(stats.join('   '))
-  if (spark) lines.push(`last ${d.recent.length}  ${spark}`)
+  if (d.ao12 !== '-') lines.push('', `ao12 ${d.ao12}`)
 
   lines.push('', d.scramble)
   if (d.recon) lines.push('', ...d.recon.lines, d.recon.summary)

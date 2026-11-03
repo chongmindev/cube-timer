@@ -54,7 +54,7 @@ Green is the one color that isn't a Bauhaus primary. It stays because every cube
 | Shape | Means | Where |
 | --- | --- | --- |
 | Circle | The timer | The large circle on the timer screen |
-| Triangle | A personal best | Yellow triangle before your best single in the times list and before "New best" notices |
+| Triangle | A personal best | Yellow triangle before "New best" notices under the timer |
 | Square | A choice or a penalty | Small black square marks the current page and the chosen option (timer toggles use a blue circle); red square marks a +2 or DNF solve |
 
 ## Name
@@ -80,6 +80,8 @@ The circle's fill shows the timer state, so you can read it from the corner of y
 
 The overshoot when you stop is the single signature motion in the app. Don't add competing animations.
 
+For 600ms after a stop, Space and taps are ignored, so a bounced or doubled press can't start the next solve or its inspection.
+
 Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`), kept short (120–300ms) because a timer has to feel instant. Every button pushes down 1px while pressed, except a times row, whose button covers the whole row.
 
 ## Rules and layout
@@ -98,7 +100,7 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 - **Menus:** 3px ink border, no shadow. The hovered row turns yellow; the selected row has the square.
 - **Solve panel:** slides in from the right (from the bottom on phones), with the time huge and a heavy rule under it.
 - **Sharing a solve:** the solve panel has a Share section with Text or Image (Text first, since it pastes anywhere).
-  - **Text:** an emoji header (🟨🟥🟦 event: time), ▲ New personal best when it is one, ao5 and ao12, a bar chart of the last 12 solves made of ▁ to █ characters (taller is slower, ✕ for DNF), the scramble, and "Timed with Thistle". Shown in a preview with a yellow rule on its left, then Copy text.
+  - **Text:** plain text with no emoji: event and time, ao12, the scramble, the reconstruction when there is one, and "Timed with Thistle". Shown in a preview with a yellow rule on its left, then Copy text.
   - **Image:** a 1080x1350 (4:5) poster drawn on a canvas, with Copy image and Save image. Same rules as the app: logo and date over a heavy rule, the event name big and left aligned, the time in a yellow circle (red for a DNF) set off-center to the right, the yellow triangle and "Personal best" when it is one, then ao5, ao12 and the solve number in ruled cells, and the scramble along the bottom.
 - **Scramble preview:** for cubes (2x2 to 7x7, OH, BLD) an unfolded net drawn by the app: square stickers with no rounding, set into solid black face blocks, in the WCA scheme (white top, green front) using the app's own red, yellow, blue and green with green lightened to `#29a35a` and a vivid orange `#ff7300` that still sits clearly between red and yellow. Stickers come from `src/lib/cubeState.ts`, a small simulator that applies the scramble. Other puzzles still use cubing.js's 2D view until they get the same treatment.
 - **Typing mode:** the Typing toggle swaps the clock for a text field inside the same circle. The circle turns blue while the field has focus and red when the entry isn't a time. Plain digits use the cubing shorthand (`1234` is 12.34), a trailing `+` adds two seconds, and `DNF` marks a DNF. Inspection stays in place but greyed out in this mode, so the controls never move.

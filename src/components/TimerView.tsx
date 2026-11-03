@@ -5,7 +5,7 @@ import { useUndoDelete } from '../hooks/useUndoDelete'
 import { EVENTS, getEvent } from '../lib/events'
 import { formatMs, formatSolve, parseTyped, uid } from '../lib/format'
 import { useStore } from '../lib/store'
-import { effective, sessionStats, type Penalty } from '../lib/stats'
+import { sessionStats, type Penalty } from '../lib/stats'
 import { useWca } from '../lib/wca'
 import { CubePreview } from './CubePreview'
 import { Menu } from './Menu'
@@ -42,12 +42,6 @@ export function TimerView({
 
   const stats = useMemo(() => sessionStats(current.solves), [current.solves])
   const last = current.solves[current.solves.length - 1] ?? null
-  const bestId = useMemo(() => {
-    let id: string | null = null
-    let best = Infinity
-    for (const s of current.solves) if (effective(s) < best) [best, id] = [effective(s), s.id]
-    return id
-  }, [current.solves])
 
   const onFinish = useCallback(
     (time: number, penalty: Penalty) => {
@@ -360,7 +354,7 @@ export function TimerView({
             Clear times
           </button>
         </header>
-        <TimesList solves={current.solves} decimals={settings.decimals} onOpen={setOpenId} bestId={bestId} />
+        <TimesList solves={current.solves} decimals={settings.decimals} onOpen={setOpenId} />
       </aside>
 
       {importing && (

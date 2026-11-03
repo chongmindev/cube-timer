@@ -56,7 +56,6 @@ export function SolveDetail({
       isBest: solve.penalty !== 'dnf' && effective(solve) === best,
       solveNumber: index + 1,
       session: sessionName,
-      recent: solves.slice(Math.max(0, index - 11), index + 1).map(effective),
       recon: solve.recon?.done ? { lines: reconLines(solve.recon), summary: reconSummary(solve.recon, solve) } : undefined,
     }
   }, [solves, solve, index, eventName, sessionName, decimals])
