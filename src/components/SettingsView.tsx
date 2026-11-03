@@ -80,7 +80,7 @@ export function SettingsView() {
 
       <section>
         <h2>Timing</h2>
-        <Row title="Inspection" detail="15 seconds, with +2 after 15 and DNF after 17, like at a competition.">
+        <Row title="Inspection" detail="15 seconds, with +2 after 15 and DNF after 17.">
           <Choice
             name="inspection"
             value={s.inspection ? 'on' : 'off'}

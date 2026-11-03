@@ -247,19 +247,6 @@ export function TimerView({
                       )}
                     </svg>
                   </button>
-                  <button
-                    className="icon-button"
-                    aria-pressed={settings.showPreview}
-                    onClick={() => dispatch({ type: 'updateSettings', patch: { showPreview: !settings.showPreview } })}
-                    aria-label="Scramble preview"
-                    title={settings.showPreview ? 'Hide scramble preview' : 'Show scramble preview'}
-                  >
-                    <svg viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="M1 8C3 4.6 5.4 3 8 3C10.6 3 13 4.6 15 8C13 11.4 10.6 13 8 13C5.4 13 3 11.4 1 8Z" />
-                      <path d="M10 8A2 2 0 1 1 6 8A2 2 0 1 1 10 8Z" />
-                      {!settings.showPreview && <path d="M2.5 13.5L13.5 2.5" />}
-                    </svg>
-                  </button>
                 </span>
               </span>
             ) : (
@@ -395,6 +382,22 @@ export function TimerView({
       </section>
 
       <aside className="side side-left chrome">
+        <header className="side-head">
+          <h2>Preview</h2>
+          <button
+            className="icon-button"
+            aria-pressed={settings.showPreview}
+            onClick={() => dispatch({ type: 'updateSettings', patch: { showPreview: !settings.showPreview } })}
+            aria-label="Scramble preview"
+            title={settings.showPreview ? 'Hide scramble preview' : 'Show scramble preview'}
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M1 8C3 4.6 5.4 3 8 3C10.6 3 13 4.6 15 8C13 11.4 10.6 13 8 13C5.4 13 3 11.4 1 8Z" />
+              <path d="M10 8A2 2 0 1 1 6 8A2 2 0 1 1 10 8Z" />
+              {!settings.showPreview && <path d="M2.5 13.5L13.5 2.5" />}
+            </svg>
+          </button>
+        </header>
         {settings.showPreview && <CubePreview puzzle={event.puzzle} scramble={scramble} />}
       </aside>
 
