@@ -4,7 +4,6 @@ import type { Penalty } from '../lib/stats'
 export type Phase = 'idle' | 'inspecting' | 'holding' | 'ready' | 'running' | 'stopped'
 
 interface Options {
-  holdMs: number
   inspection: boolean
   /** When false, the spacebar is ignored (menus, panels, text fields). A running timer can always be stopped. */
   enabled: boolean
@@ -12,6 +11,8 @@ interface Options {
 }
 
 const INSPECTION_MS = 15000
+// How long Space is held before the timer is ready: the Stackmat's 0.55 seconds.
+const HOLD_MS = 550
 // After a stop, presses are ignored this long, so a bounced or doubled Space can't start the next solve.
 const COOLDOWN_MS = 600
 
@@ -21,7 +22,7 @@ function inspectionPenalty(elapsed: number): Penalty {
   return 'none'
 }
 
-export function useTimer({ holdMs, inspection, enabled, onFinish }: Options) {
+export function useTimer({ inspection, enabled, onFinish }: Options) {
   const [phase, setPhaseState] = useState<Phase>('idle')
   const [now, setNow] = useState(0)
   const phaseRef = useRef<Phase>('idle')
@@ -58,9 +59,9 @@ export function useTimer({ holdMs, inspection, enabled, onFinish }: Options) {
     if (p === 'idle' || p === 'inspecting') {
       holdFrom.current = p
       setPhase('holding')
-      holdTimer.current = window.setTimeout(() => setPhase('ready'), holdMs)
+      holdTimer.current = window.setTimeout(() => setPhase('ready'), HOLD_MS)
     }
-  }, [holdMs, inspection])
+  }, [inspection])
 
   const release = useCallback(() => {
     const p = phaseRef.current

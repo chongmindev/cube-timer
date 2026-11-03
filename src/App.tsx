@@ -3,7 +3,6 @@ import { SessionsView } from './components/SessionsView'
 import { SettingsView } from './components/SettingsView'
 import { Logo } from './components/Logo'
 import { ReconstructView } from './components/ReconstructView'
-import { StreakMark } from './components/StreakMark'
 import { TimerView } from './components/TimerView'
 import { getEvent } from './lib/events'
 import { StoreProvider, useStore } from './lib/store'
@@ -48,7 +47,6 @@ function Shell() {
             Thistle <span className="wordmark-sub">cube timer</span>
           </span>
         </span>
-        <StreakMark />
         <nav className="views" aria-label="Main">
           {VIEWS.map((v) => (
             <button

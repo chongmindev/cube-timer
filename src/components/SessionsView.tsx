@@ -21,7 +21,7 @@ export function SessionsView({
   const [renaming, setRenaming] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
-  const { remove, clear, toast } = useUndoDelete()
+  const { remove, clear, deleteSession, toast } = useUndoDelete()
   const open = current.solves.findIndex((s) => s.id === openId)
   const last = current.solves.at(-1)
 
@@ -97,7 +97,7 @@ export function SessionsView({
               className="text-button danger"
               onClick={() => {
                 if (confirmDelete) {
-                  dispatch({ type: 'deleteSession', id: current.id })
+                  deleteSession()
                   setConfirmDelete(false)
                 } else setConfirmDelete(true)
               }}

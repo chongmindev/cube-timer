@@ -68,7 +68,6 @@ export function TimerView({
   )
 
   const timer = useTimer({
-    holdMs: settings.holdMs,
     inspection: settings.inspection,
     enabled: !openId && !menuOpen && !importing && !settings.typing && scramble !== null,
     onFinish,
@@ -203,30 +202,82 @@ export function TimerView({
           >
             Typing
           </button>
-        </div>
-        <div className="scramble-actions">
-          <button className="text-button" onClick={back} disabled={!canGoBack}>
-            Previous scramble
-          </button>
-          <button className="text-button" onClick={advance} disabled={!scramble}>
-            Next scramble
-          </button>
-          <button className="text-button" onClick={copyScramble} disabled={!scramble}>
-            {copied ? 'Copied' : 'Copy'}
-          </button>
           {imported ? (
             <button className="text-button" onClick={dropImported} title="Go back to generated scrambles">
               Imported {imported.at} of {imported.total}, stop
             </button>
           ) : (
-            <button className="text-button" onClick={() => setImporting(true)}>
+            <button className="text-button" onClick={() => setImporting(true)} title="Paste scrambles to use next">
               Import
             </button>
           )}
         </div>
-        <p className={`scramble-text ${scrambleSize}`} aria-live="polite">
-          {scramble ? <span>{scramble}</span> : <span className="muted">Generating scramble</span>}
-        </p>
+        <div className="scramble-row">
+          <button
+            className="scramble-step"
+            onClick={back}
+            disabled={!canGoBack}
+            aria-label="Previous scramble"
+            title="Previous scramble"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M10 2.5L4.5 8L10 13.5" />
+            </svg>
+          </button>
+          <p className={`scramble-text ${scrambleSize}`} aria-live="polite">
+            {scramble ? (
+              <span>
+                {/* Each move stays on one line; browsers would otherwise break Megaminx's R-- at the dash. */}
+                {scramble.split(/(\s+)/).map((part, i) => (i % 2 ? part : <span key={i} className="move">{part}</span>))}
+                <span className="scramble-tools">
+                  <button
+                    className="icon-button"
+                    onClick={copyScramble}
+                    aria-label={copied ? 'Copied' : 'Copy scramble'}
+                    title={copied ? 'Copied' : 'Copy scramble'}
+                  >
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      {copied ? (
+                        <path d="M2.5 8.5L6.5 12.5L13.5 4" />
+                      ) : (
+                        <>
+                          <path d="M5.5 5.5H13.5V13.5H5.5Z" />
+                          <path d="M3.5 10.5H2.5V2.5H10.5V3.5" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
+                  <button
+                    className="icon-button"
+                    aria-pressed={settings.showPreview}
+                    onClick={() => dispatch({ type: 'updateSettings', patch: { showPreview: !settings.showPreview } })}
+                    aria-label="Scramble preview"
+                    title={settings.showPreview ? 'Hide scramble preview' : 'Show scramble preview'}
+                  >
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M1 8C3 4.6 5.4 3 8 3C10.6 3 13 4.6 15 8C13 11.4 10.6 13 8 13C5.4 13 3 11.4 1 8Z" />
+                      <path d="M10 8A2 2 0 1 1 6 8A2 2 0 1 1 10 8Z" />
+                      {!settings.showPreview && <path d="M2.5 13.5L13.5 2.5" />}
+                    </svg>
+                  </button>
+                </span>
+              </span>
+            ) : (
+              <span className="muted">Generating scramble</span>
+            )}
+          </p>
+          <button
+            className="scramble-step"
+            onClick={advance}
+            disabled={!scramble}
+            aria-label="Next scramble"
+            title="Next scramble"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M6 2.5L11.5 8L6 13.5" />
+            </svg>
+          </button>
+        </div>
       </section>
 
       <section

@@ -5,7 +5,8 @@ export function formatMs(ms: number | null, decimals = 2): string {
   if (ms === null) return '-'
   if (ms === Infinity) return 'DNF'
   const factor = 10 ** decimals
-  const units = Math.floor((ms / 1000) * factor)
+  // Multiply first: 39870 / 1000 * 100 is 3986.999..., which would show 39.86.
+  const units = Math.floor((ms * factor) / 1000)
   const totalSeconds = Math.floor(units / factor)
   const frac = String(units % factor).padStart(decimals, '0')
   const minutes = Math.floor(totalSeconds / 60)

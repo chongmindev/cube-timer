@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, type ReactNode } from 'react'
+import type { ActivityBatch } from './activity'
 import { uid } from './format'
 import type { Penalty, Recon, Solve } from './stats'
 
@@ -15,7 +16,6 @@ export type Theme = 'system' | 'light' | 'dark'
 
 export interface Settings {
   inspection: boolean
-  holdMs: number
   focusMode: boolean
   runningDisplay: RunningDisplay
   decimals: 2 | 3
@@ -23,17 +23,19 @@ export interface Settings {
   showPreview: boolean
   typing: boolean // enter times by keyboard instead of timing
   wcaId: string | null
+  keepActivity: boolean // cleared and deleted solves still count in the activity graph
 }
 
 export interface State {
   sessions: Session[]
   currentId: string
   settings: Settings
+  /** Day totals from cleared and deleted sessions. */
+  archive: ActivityBatch[]
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   inspection: false,
-  holdMs: 300,
   focusMode: true,
   runningDisplay: 'live',
   decimals: 2,
@@ -41,6 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showPreview: true,
   typing: false,
   wcaId: null,
+  keepActivity: true,
 }
 
 const STORAGE_KEY = 'cube-timer:v1'
@@ -55,14 +58,14 @@ function initialState(): State {
     if (raw) {
       const parsed = JSON.parse(raw) as State
       if (parsed.sessions?.length) {
-        return { ...parsed, settings: { ...DEFAULT_SETTINGS, ...parsed.settings } }
+        return { ...parsed, settings: { ...DEFAULT_SETTINGS, ...parsed.settings }, archive: parsed.archive ?? [] }
       }
     }
   } catch {
     // Storage unavailable or corrupt: start fresh.
   }
   const first = newSession('333', 'Main')
-  return { sessions: [first], currentId: first.id, settings: DEFAULT_SETTINGS }
+  return { sessions: [first], currentId: first.id, settings: DEFAULT_SETTINGS, archive: [] }
 }
 
 export type Action =
@@ -77,6 +80,8 @@ export type Action =
   | { type: 'renameSession'; id: string; name: string }
   | { type: 'deleteSession'; id: string }
   | { type: 'updateSettings'; patch: Partial<Settings> }
+  | { type: 'archive'; batch: ActivityBatch }
+  | { type: 'unarchive'; id: string }
   | { type: 'replaceAll'; state: State }
 
 function mapCurrent(state: State, fn: (s: Session) => Session): State {
@@ -130,8 +135,12 @@ function reducer(state: State, action: Action): State {
     }
     case 'updateSettings':
       return { ...state, settings: { ...state.settings, ...action.patch } }
+    case 'archive':
+      return { ...state, archive: [...state.archive, action.batch] }
+    case 'unarchive':
+      return { ...state, archive: state.archive.filter((b) => b.id !== action.id) }
     case 'replaceAll':
-      return action.state
+      return { ...action.state, archive: action.state.archive ?? [] }
   }
 }
 

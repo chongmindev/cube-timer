@@ -41,7 +41,7 @@ Everything is sentence case, names capitalized, and cubing notation as cubers wr
 | `--paper` | `#ffffff` | `#1a1a1a` | Background (pure white; no grey or cream) |
 | `--ink` | `#000000` | `#f2f2ee` | Text and rules |
 | `--muted` | `#5d5d58` | `#9b9b94` | Labels, secondary text |
-| `--hairline` | `#cfcfc8` | `#3a3a37` | Faint marks: empty streak days, the typing placeholder, a loading share card |
+| `--hairline` | `#cfcfc8` | `#3a3a37` | Faint marks: the typing placeholder, a used-up scramble arrow, a loading share card |
 | `--red` | `#d7261e` | `#ef4a3c` | Holding (not ready yet), penalties, destructive actions |
 | `--green` | `#1d8a4b` | `#35b86b` | Ready: let go to start. Used nowhere else |
 | `--yellow` | `#f5c400` | `#ffd21a` | Solving, personal bests, hover in menus |
@@ -96,7 +96,7 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 ## Components
 
 - **Navigation and options:** plain text. The current one turns ink and gets a small black square that springs in. No underlines, tabs or pills.
-- **Text actions** ("Next scramble", "Copy", "Delete"): blue (red if destructive), with an underline that draws in on hover.
+- **Text actions** ("Import", "Clear times", "Delete"): blue (red if destructive), with an underline that draws in on hover.
 - **Menus:** 3px ink border, no shadow. The hovered row turns yellow; the selected row has the square.
 - **Solve panel:** slides in from the right (from the bottom on phones), with the time huge and a heavy rule under it.
 - **Sharing a solve:** the solve panel has a Share section with Text or Image (Text first, since it pastes anywhere).
@@ -105,7 +105,7 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 - **Scramble preview:** for cubes (2x2 to 7x7, OH, BLD) an unfolded net drawn by the app: square stickers with no rounding, set into solid black face blocks, in the WCA scheme (white top, green front) using the app's own red, yellow, blue and green with green lightened to `#29a35a` and a vivid orange `#ff7300` that still sits clearly between red and yellow. Stickers come from `src/lib/cubeState.ts`, a small simulator that applies the scramble. Other puzzles still use cubing.js's 2D view until they get the same treatment.
 - **Typing mode:** the Typing toggle swaps the clock for a text field inside the same circle. The circle turns blue while the field has focus and red when the entry isn't a time. Plain digits use the cubing shorthand (`1234` is 12.34), a trailing `+` adds two seconds, and `DNF` marks a DNF. Inspection stays in place but greyed out in this mode, so the controls never move.
 - **Reconstruction:** three columns like the timer: a 3D cube from cubing.js, repainted in the scramble preview's sticker colors and following light and dark mode (drawn from how you held it, white top and green front before that; the hidden back, left and bottom stickers float just off those faces so every piece shows, and you can drag to turn it), the step list (label, moves, move count), and suggestions with one moves field. Suggestion rows turn yellow on hover like menu rows; the chosen pair gets the black square, and the cube greys out every piece but that pair and the centers. What you type previews on the cube live, with Play these moves to watch them turn. Clicking an added step shows the cube at that step, plays it, and opens its moves under the row to edit (the cube follows as you type) or delete; saving relabels the steps after it, and Play solve replays the whole reconstruction from the scramble; and a line under the field says what it solves or what it breaks, in red when something's wrong.
-- **Daily streak:** in the top bar after the wordmark: the day count plus seven short bars for the last week (ink for a day with a solve, hairline for none, today's bar taller and red once solved). A streak still waiting on today's solve shows its count in muted grey. Bars are rules, not squares, so they don't borrow the square's meaning.
+- **Scramble row:** previous and next are chevrons either side of the scramble (ink, blue on hover, hairline when there's nothing to go back to). Copy and the preview toggle are small muted icons right after the last move: copy turns into a check for a moment, and the eye is struck through while the preview is hidden. The eye flips the same Scramble preview setting as Settings. Moves never break across lines.
 - **Timer toggles:** Inspection and Typing on the timer screen are a circle beside the word: hollow and muted when off, filled blue with the word in black when on. Hover only darkens the word, so it never looks on. The pickers and toggles sit on one row and the scramble buttons on their own row below, so turning a toggle never reflows them. Both are saved like every other setting.
 - **Times header:** "Times" title with "Clear times" in red. Clearing is instant with an undo, never a pop-up.
 - **Toast:** an ink bar at the bottom, with the action in yellow ("Solve deleted. Undo").
@@ -129,7 +129,7 @@ Everything else moves on one curve, `--ease` (`cubic-bezier(0.32, 0.72, 0, 1)`),
 ## Other puzzles, activity, and layout
 
 - **Other puzzle previews:** Pyraminx, Skewb, Megaminx, Square-1 and Clock are drawn by cubing.js, with its SVG colors swapped for the cube net's before drawing (`src/lib/puzzleColors.ts`). Megaminx's six extra faces use toned-down purple, cream, light blue, lime, pink and grey. Previews redraw when the theme changes.
-- **Activity:** the Sessions page opens with a year of days as small squares, darker blue for more solves (1, 5, 15 and 30 solves a day), with the current and longest streak beside it.
+- **Activity:** the Sessions page opens with a year of days as small squares, darker blue for more solves (1, 5, 15 and 30 solves a day), with the current and longest streak beside it. Hovering a day shows a dark card above it with the date, the solve count and the best single per event. Cleared and deleted sessions still count when "Keep cleared solves in activity" is on (the default): they are kept as day totals, the toast says so, and Undo takes them back out.
 - **Home page:** on desktop it is exactly the window height and never scrolls; only the times list scrolls. The scramble area has a fixed height, so the circle sits in the same place for every event; long scrambles get smaller type and the full column width instead of more lines.
 - **Tab title:** "Thistle" plus the page: Home, Sessions, Settings or Reconstruct.
-- **Scramble import:** Import, beside Copy, opens a side panel with one text field: one scramble per line (numbering like "1." is dropped; Megaminx takes seven lines per scramble, or blocks split by blank lines). Imported scrambles come next, in order, and the button reads "Imported 2 of 12, stop" until they run out or you stop. Switching events drops them.
+- **Scramble import:** Import, at the end of the picker row, opens a side panel with one text field: one scramble per line (numbering like "1." is dropped; Megaminx takes seven lines per scramble, or blocks split by blank lines). Imported scrambles come next, in order, and the button reads "Imported 2 of 12, stop" until they run out or you stop. Switching events drops them.

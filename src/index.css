@@ -255,45 +255,6 @@ kbd {
 }
 
 
-/* Daily streak: one short bar per day of the last week, filled for days with a solve. */
-.streak {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-right: auto;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-.streak-week {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 1.1rem;
-}
-
-.streak-day {
-  width: 5px;
-  height: 0.7rem;
-  background: var(--hairline);
-}
-
-.streak-day.is-on {
-  background: var(--ink);
-}
-
-.streak-day.is-today {
-  height: 100%;
-}
-
-.streak-day.is-today.is-on {
-  background: var(--red);
-}
-
-.streak.is-due .streak-count {
-  color: var(--muted);
-}
-
 .views {
   display: flex;
   gap: clamp(1.25rem, 3vw, 2.25rem);
@@ -402,10 +363,70 @@ kbd {
   gap: 0.5rem 2rem;
 }
 
-.scramble-actions {
-  display: flex;
-  gap: 1.5rem;
-  font-size: 0.95rem;
+/* Previous and next sit either side of the scramble. */
+.scramble-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.25rem, 2vw, 1.5rem);
+  width: 100%;
+}
+
+.scramble-row .scramble-text {
+  justify-self: center;
+}
+
+.scramble-step {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--ink);
+  transition: color 160ms var(--ease);
+}
+
+.scramble-step:hover:not(:disabled) {
+  color: var(--blue);
+}
+
+.scramble-step:disabled {
+  color: var(--hairline);
+}
+
+.scramble-step svg,
+.icon-button svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: square;
+}
+
+.scramble-step svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* Copy and preview sit after the last move, so they follow the scramble wherever it ends. */
+.scramble-tools {
+  display: inline-flex;
+  margin-left: 0.4em;
+  vertical-align: middle;
+  word-spacing: normal;
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  color: var(--muted);
+  transition: color 160ms var(--ease);
+}
+
+.icon-button:hover {
+  color: var(--blue);
 }
 
 /* A fixed height, so the circle sits at the same place for every event. Longer scrambles get
@@ -423,6 +444,10 @@ kbd {
   word-spacing: 0.3em;
   max-width: 44ch;
   text-wrap: balance;
+}
+
+.scramble-text .move {
+  white-space: nowrap;
 }
 
 .scramble-text > * {
@@ -1068,6 +1093,7 @@ kbd {
 
 /* Activity: a year of days as small squares, darker blue for more solves. */
 .activity {
+  position: relative;
   grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
@@ -1173,6 +1199,41 @@ kbd {
 
 .activity-cell[data-level='4'] {
   background: var(--blue);
+}
+
+.activity-cell[data-day]:hover {
+  outline: 1.5px solid var(--ink);
+  outline-offset: 1px;
+}
+
+/* The day under the pointer: a dark card just above its square. */
+.activity-tip {
+  position: absolute;
+  z-index: var(--z-menu);
+  min-width: 12rem;
+  transform: translate(-50%, calc(-100% - 8px));
+  padding: 0.55rem 0.8rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.activity-tip p {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin: 0;
+}
+
+.activity-tip-head {
+  font-weight: 600;
+}
+
+.activity-tip-row span:first-child {
+  opacity: 0.7;
 }
 
 .activity-key {
@@ -1329,6 +1390,15 @@ kbd {
 
 .wca-connect input:focus {
   border-bottom-color: var(--blue);
+}
+
+.wca-flag {
+  display: inline-block;
+  height: 0.85em;
+  width: auto;
+  margin-right: 0.45em;
+  vertical-align: -0.05em;
+  outline: 1px solid var(--hairline);
 }
 
 .wca-glance {
@@ -1782,11 +1852,6 @@ a.text-button {
     height: min(38vh, 82vw);
   }
 
-  .scramble-actions {
-    justify-content: center;
-    width: 100%;
-  }
-
   .sessions-view {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1822,10 +1887,6 @@ a.text-button {
   }
 
   .wordmark-text {
-    display: none;
-  }
-
-  .streak-week {
     display: none;
   }
 

@@ -1,4 +1,7 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
+import { activityDays } from '../lib/activity'
+import { EVENTS } from '../lib/events'
+import { formatMs } from '../lib/format'
 import { useStore } from '../lib/store'
 import { dayNumber, streak } from '../lib/streak'
 
@@ -14,19 +17,28 @@ const toDate = (day: number) => new Date(day * DAY_MS)
 
 const plural = (n: number, word: string) => `${n.toLocaleString()} ${word}${n === 1 ? '' : 's'}`
 
+const longDate = (day: number) =>
+  toDate(day).toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+
 /**
  * A year of practice, one square per day: columns are weeks (Sunday first), and the darker
- * the square, the more solves that day. Counts every session and event.
+ * the square, the more solves that day. Counts every session and event, plus cleared solves
+ * kept for activity. Hovering a day shows its solves and best single per event.
  */
 export function ActivityGraph() {
   const { state } = useStore()
-  const dates = useMemo(() => state.sessions.flatMap((s) => s.solves.map((solve) => solve.date)), [state.sessions])
+  const days = useMemo(() => activityDays(state), [state])
 
   const { weeks, months, total, s } = useMemo(() => {
     const counts = new Map<number, number>()
-    for (const d of dates) {
-      const day = dayNumber(d)
-      counts.set(day, (counts.get(day) ?? 0) + 1)
+    for (const [day, events] of Object.entries(days)) {
+      counts.set(Number(day), Object.values(events).reduce((n, t) => n + t.count, 0))
     }
     const today = dayNumber(Date.now())
     // The grid ends with this week's Saturday column, so today sits in the last column.
@@ -51,8 +63,8 @@ export function ActivityGraph() {
         months.push({ week: w, label: start.toLocaleDateString(undefined, { month: 'short', timeZone: 'UTC' }) })
       }
     }
-    return { weeks, months, total, s: streak(dates) }
-  }, [dates])
+    return { weeks, months, total, s: streak(counts.keys()) }
+  }, [days])
 
   // Open on the most recent weeks when the year doesn't fit.
   const scroller = useRef<HTMLDivElement>(null)
@@ -61,8 +73,25 @@ export function ActivityGraph() {
     if (el) el.scrollLeft = el.scrollWidth
   }, [])
 
+  // The day under the pointer, placed above its square.
+  const box = useRef<HTMLElement>(null)
+  const [tip, setTip] = useState<{ day: number; x: number; y: number } | null>(null)
+  const onOver = (e: PointerEvent) => {
+    const cell = (e.target as HTMLElement).closest<HTMLElement>('[data-day]')
+    if (!cell || !box.current) return setTip(null)
+    const r = cell.getBoundingClientRect()
+    const b = box.current.getBoundingClientRect()
+    // Kept inside the section so the card never runs off the page.
+    const x = Math.min(Math.max(r.left + r.width / 2 - b.left, 96), b.width - 96)
+    setTip({ day: Number(cell.dataset.day), x, y: r.top - b.top })
+  }
+  const tipEvents = tip
+    ? EVENTS.filter((e) => days[tip.day]?.[e.id]).map((e) => ({ event: e, ...days[tip.day][e.id] }))
+    : []
+  const tipCount = tipEvents.reduce((n, t) => n + t.count, 0)
+
   return (
-    <section className="activity" aria-labelledby="activity-title">
+    <section className="activity" aria-labelledby="activity-title" ref={box}>
       <div className="activity-head">
         <h2 id="activity-title">Activity</h2>
         <p className="muted">
@@ -70,7 +99,7 @@ export function ActivityGraph() {
           {plural(s.longest, 'day')}.
         </p>
       </div>
-      <div className="activity-scroll" ref={scroller}>
+      <div className="activity-scroll" ref={scroller} onScroll={() => setTip(null)}>
         <div className="activity-grid" style={{ ['--weeks' as string]: WEEKS }}>
           <span className="activity-days" aria-hidden="true">
             <span>Mon</span>
@@ -84,22 +113,41 @@ export function ActivityGraph() {
               </span>
             ))}
           </span>
-          <span className="activity-cells" role="img" aria-label={`${plural(total, 'solve')} in the last year`}>
+          <span
+            className="activity-cells"
+            role="img"
+            aria-label={`${plural(total, 'solve')} in the last year`}
+            onPointerOver={onOver}
+            onPointerLeave={() => setTip(null)}
+          >
             {weeks.flat().map((c) => (
               <span
                 key={c.day}
                 className="activity-cell"
                 data-level={c.future ? undefined : level(c.count)}
-                title={
-                  c.future
-                    ? undefined
-                    : `${plural(c.count, 'solve')} on ${toDate(c.day).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}`
-                }
+                data-day={c.future ? undefined : c.day}
               />
             ))}
           </span>
         </div>
       </div>
+      {tip && (
+        <div className="activity-tip" style={{ left: tip.x, top: tip.y }} role="tooltip">
+          <p className="activity-tip-head">
+            <span>{longDate(tip.day)}</span>
+            <span>{tipCount ? plural(tipCount, 'solve') : 'No solves'}</span>
+          </p>
+          {tipEvents.map((t) => (
+            <p key={t.event.id} className="activity-tip-row">
+              <span>{t.event.name}</span>
+              <span>
+                {tipEvents.length > 1 && `${plural(t.count, 'solve')}, `}
+                best {t.best === null ? 'DNF' : formatMs(t.best, state.settings.decimals)}
+              </span>
+            </p>
+          ))}
+        </div>
+      )}
       <p className="activity-key muted" aria-hidden="true">
         Fewer
         {[0, 1, 2, 3, 4].map((l) => (

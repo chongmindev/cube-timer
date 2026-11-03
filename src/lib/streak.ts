@@ -9,18 +9,15 @@ export function dayNumber(ts: number): number {
 export interface Streak {
   current: number // days in a row up to today, or up to yesterday if today has no solve yet
   longest: number
-  solvedToday: boolean
-  week: boolean[] // the last 7 days, oldest first, ending today
 }
 
-export function streak(dates: number[], now = Date.now()): Streak {
-  const days = new Set(dates.map(dayNumber))
+export function streak(practiced: Iterable<number>, now = Date.now()): Streak {
+  const days = new Set(practiced)
   const today = dayNumber(now)
-  const solvedToday = days.has(today)
 
   // Today without a solve doesn't break the streak yet; it is still yesterday's to keep.
   let current = 0
-  for (let d = solvedToday ? today : today - 1; days.has(d); d--) current++
+  for (let d = days.has(today) ? today : today - 1; days.has(d); d--) current++
 
   let longest = 0
   for (const d of days) {
@@ -30,6 +27,5 @@ export function streak(dates: number[], now = Date.now()): Streak {
     longest = Math.max(longest, run)
   }
 
-  const week = Array.from({ length: 7 }, (_, i) => days.has(today - 6 + i))
-  return { current, longest, solvedToday, week }
+  return { current, longest }
 }

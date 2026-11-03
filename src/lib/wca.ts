@@ -21,6 +21,8 @@ export interface WcaProfile {
   id: string
   name: string
   country: string
+  /** ISO 3166 code, for the flag. The WCA's multi-country entries use codes starting with X. */
+  countryCode: string
   url: string
   competitions: number
   medals: { gold: number; silver: number; bronze: number }
@@ -49,6 +51,7 @@ export async function fetchProfile(id: string): Promise<WcaProfile | null> {
     id: d.person.wca_id,
     name: d.person.name,
     country: d.person.country?.name ?? '',
+    countryCode: d.person.country?.iso2 ?? '',
     url: d.person.url,
     competitions: d.competition_count ?? 0,
     medals: { gold: d.medals?.gold ?? 0, silver: d.medals?.silver ?? 0, bronze: d.medals?.bronze ?? 0 },
@@ -56,6 +59,12 @@ export async function fetchProfile(id: string): Promise<WcaProfile | null> {
     records,
     fetchedAt: Date.now(),
   }
+}
+
+/** A flag image for the profile's country, or null for the WCA's multi-country entries. */
+export function flagUrl(profile: WcaProfile): string | null {
+  const code = profile.countryCode.toLowerCase()
+  return /^[a-wyz][a-z]$/.test(code) || code === 'xk' ? `https://flagcdn.com/${code}.svg` : null
 }
 
 export function readSaved(): WcaProfile | null {
@@ -87,8 +96,8 @@ export function useWca(id: string | null): WcaProfile | null {
     const saved = readSaved()
     const mine = saved && saved.id === id ? saved : null
     setProfile(mine)
-    // Profiles saved before podiums and records were kept are fetched again.
-    if (mine?.medals && Date.now() - mine.fetchedAt < FRESH_MS) return
+    // Profiles saved before flags were kept are fetched again.
+    if (mine?.countryCode !== undefined && Date.now() - mine.fetchedAt < FRESH_MS) return
     let live = true
     fetchProfile(id)
       .then((p) => {

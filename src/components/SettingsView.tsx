@@ -2,9 +2,9 @@ import { Fragment, useRef, useState, type ReactNode } from 'react'
 import { EVENTS } from '../lib/events'
 import { formatMs } from '../lib/format'
 import { useStore, type RunningDisplay, type State, type Theme } from '../lib/store'
-import { WCA_ID, fetchProfile, save, useWca } from '../lib/wca'
+import { WCA_ID, fetchProfile, flagUrl, save, useWca } from '../lib/wca'
 
-function Row({ title, detail, children }: { title: string; detail?: string; children: ReactNode }) {
+function Row({ title, detail, children }: { title: ReactNode; detail?: string; children: ReactNode }) {
   return (
     <div className="setting">
       <div>
@@ -88,19 +88,6 @@ export function SettingsView() {
             onChange={(v) => set({ inspection: v === 'on' })}
           />
         </Row>
-        <Row title="Hold to start" detail="How long to hold space before the timer is ready.">
-          <Choice
-            name="hold"
-            value={s.holdMs}
-            options={[
-              { value: 0, label: 'None' },
-              { value: 300, label: '0.3s' },
-              { value: 550, label: '0.55s' },
-              { value: 1000, label: '1s' },
-            ]}
-            onChange={(v) => set({ holdMs: v })}
-          />
-        </Row>
         <Row title="While solving, show">
           <Choice<RunningDisplay>
             name="running"
@@ -163,6 +150,17 @@ export function SettingsView() {
       <section>
         <h2>Your data</h2>
         <p className="setting-detail">Solves are saved in this browser only. Export them to back up or move devices.</p>
+        <Row
+          title="Keep cleared solves in activity"
+          detail="When you clear times or delete a session, its solves still count toward your activity graph and streak."
+        >
+          <Choice
+            name="keep-activity"
+            value={s.keepActivity ? 'on' : 'off'}
+            options={[...ON_OFF]}
+            onChange={(v) => set({ keepActivity: v === 'on' })}
+          />
+        </Row>
         <div className="data-actions">
           <button className="text-button" onClick={exportData}>
             Export all sessions
@@ -240,12 +238,19 @@ function WcaSection({ wcaId, onChange }: { wcaId: string | null; onChange: (id: 
       {wcaId ? (
         <>
           <Row
-            title={profile ? profile.name : wcaId}
-            detail={
-              profile
-                ? `${profile.id}, ${profile.country}`
-                : 'Loading official results'
+            title={
+              profile ? (
+                <>
+                  {flagUrl(profile) && (
+                    <img className="wca-flag" src={flagUrl(profile)!} alt={profile.country} title={profile.country} />
+                  )}
+                  {profile.name}
+                </>
+              ) : (
+                wcaId
+              )
             }
+            detail={profile ? profile.id : 'Loading official results'}
           >
             <div className="data-actions">
               {profile && (
