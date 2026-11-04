@@ -48,14 +48,44 @@ const SIZES: [string, number][] = [
   ['mo3', 3],
   ['ao5', 5],
   ['ao12', 12],
+  ['ao25', 25],
   ['ao50', 50],
   ['ao100', 100],
+  ['ao200', 200],
+  ['ao500', 500],
+  ['ao1000', 1000],
 ]
 
-/** Rolling average of the given size ending at each index (null until enough solves). */
+/** First index in sorted `a` whose value is at least `x`. */
+function lowerBound(a: number[], x: number): number {
+  let lo = 0
+  let hi = a.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (a[mid] < x) lo = mid + 1
+    else hi = mid
+  }
+  return lo
+}
+
+/**
+ * Rolling average of the given size ending at each index (null until enough solves). Same
+ * result as `average` on each window, but the window is kept sorted as it slides instead of
+ * being sorted again for every solve, so ao1000 over thousands of solves stays quick.
+ */
 export function rolling(solves: Solve[], size: number): (number | null)[] {
   const times = solves.map(effective)
-  return times.map((_, i) => (i + 1 < size ? null : average(times.slice(i + 1 - size, i + 1))))
+  const trim = size === 3 ? 0 : Math.ceil(size * 0.05)
+  const window: number[] = []
+  return times.map((t, i) => {
+    window.splice(lowerBound(window, t), 0, t)
+    if (i >= size) window.splice(lowerBound(window, times[i - size]), 1)
+    if (window.length < size) return null
+    if (window[size - trim - 1] === Infinity) return Infinity
+    let sum = 0
+    for (let j = trim; j < size - trim; j++) sum += window[j]
+    return sum / (size - 2 * trim)
+  })
 }
 
 function minOf(values: (number | null)[]): number | null {
@@ -67,6 +97,8 @@ function minOf(values: (number | null)[]): number | null {
 export function sessionStats(solves: Solve[]) {
   const times = solves.map(effective)
   const averages: AvgStat[] = SIZES.map(([label, size]) => {
+    // Skip the work for averages the session can't have yet.
+    if (solves.length < size) return { label, size, current: null, best: null }
     const roll = rolling(solves, size)
     return { label, size, current: roll[roll.length - 1] ?? null, best: minOf(roll) }
   })

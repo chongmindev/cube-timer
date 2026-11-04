@@ -24,6 +24,7 @@ export interface Settings {
   typing: boolean // enter times by keyboard instead of timing
   wcaId: string | null
   keepActivity: boolean // cleared and deleted solves still count in the activity graph
+  sidePanel: 'times' | 'stats' // what the timer's right column shows
 }
 
 export interface State {
@@ -44,6 +45,7 @@ export const DEFAULT_SETTINGS: Settings = {
   typing: false,
   wcaId: null,
   keepActivity: true,
+  sidePanel: 'times',
 }
 
 const STORAGE_KEY = 'cube-timer:v1'

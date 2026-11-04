@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { useUndoDelete } from '../hooks/useUndoDelete'
 import { ActivityGraph } from './ActivityGraph'
 import { EVENTS, getEvent } from '../lib/events'
-import { formatDate, formatMs, formatSolve } from '../lib/format'
+import { formatDate, formatMs } from '../lib/format'
 import { useStore } from '../lib/store'
 import { sessionStats } from '../lib/stats'
 import { SolveDetail } from './SolveDetail'
+import { StatsTable } from './StatsTable'
 import { TimesList } from './TimesList'
 
 export function SessionsView({
@@ -23,7 +24,6 @@ export function SessionsView({
   const [openId, setOpenId] = useState<string | null>(null)
   const { remove, clear, deleteSession, toast } = useUndoDelete()
   const open = current.solves.findIndex((s) => s.id === openId)
-  const last = current.solves.at(-1)
 
   // Group sessions under their event, in event order.
   const groups = EVENTS.map((e) => ({ event: e, sessions: state.sessions.filter((s) => s.event === e.id) })).filter(
@@ -108,29 +108,7 @@ export function SessionsView({
           </div>
         </header>
 
-        <table className="stat-table">
-          <thead>
-            <tr>
-              <th scope="col" />
-              <th scope="col">Current</th>
-              <th scope="col">Best</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Single</th>
-              <td>{last ? formatSolve(last, decimals) : '-'}</td>
-              <td>{formatMs(stats.best, decimals)}</td>
-            </tr>
-            {stats.averages.map((a) => (
-              <tr key={a.label}>
-                <th scope="row">{a.label}</th>
-                <td>{formatMs(a.current, decimals)}</td>
-                <td>{formatMs(a.best, decimals)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <StatsTable solves={current.solves} stats={stats} decimals={decimals} />
 
         <p className="session-summary">
           {stats.count} solves, mean {formatMs(stats.mean, decimals)}, worst {formatMs(stats.worst, decimals)}

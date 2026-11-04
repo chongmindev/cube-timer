@@ -285,12 +285,14 @@ kbd {
 
 .view-link:hover,
 .view-link[aria-current='page'],
+.view-link[aria-selected='true'],
 .segmented label:hover,
 .segmented label.is-on {
   color: var(--ink);
 }
 
 .view-link[aria-current='page']::before,
+.view-link[aria-selected='true']::before,
 .segmented label.is-on::before {
   transform: scale(1);
 }
@@ -695,7 +697,23 @@ kbd {
   font-weight: 700;
 }
 
+.side-tabs {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.side-tabs .view-link {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
 .side-head .text-button {
+  font-size: 0.9rem;
+}
+
+.side-note {
+  margin-top: 0.75rem;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
@@ -1210,7 +1228,7 @@ kbd {
 .activity-tip {
   position: absolute;
   z-index: var(--z-menu);
-  min-width: 12rem;
+  width: min(18.5rem, calc(100% - 1rem));
   transform: translate(-50%, calc(-100% - 8px));
   padding: 0.55rem 0.8rem;
   background: var(--ink);
@@ -1219,6 +1237,10 @@ kbd {
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
+}
+
+.activity-tip[data-pinned] {
+  pointer-events: auto;
 }
 
 .activity-tip p {
@@ -1232,8 +1254,36 @@ kbd {
   font-weight: 600;
 }
 
+.activity-tip-event + .activity-tip-event {
+  margin-top: 0.4rem;
+}
+
 .activity-tip-row span:first-child {
   opacity: 0.7;
+}
+
+.activity-tip p.activity-tip-scramble {
+  align-items: baseline;
+  gap: 0.75rem;
+  word-spacing: 0.15em;
+}
+
+/* Long scrambles (Megaminx) stop at three lines until the card is pinned. */
+.activity-tip:not([data-pinned]) .activity-tip-scramble span {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.activity-tip .text-button {
+  flex: none;
+  color: var(--yellow);
+}
+
+.activity-tip p.activity-tip-hint {
+  margin-top: 0.4rem;
+  opacity: 0.6;
 }
 
 .activity-key {
@@ -1327,7 +1377,6 @@ kbd {
   margin-top: -1rem;
 }
 
-/* Settings view */
 /* Recons: every reconstruction in one table, newest first. */
 .recons-view {
   display: flex;
@@ -1372,6 +1421,7 @@ kbd {
   }
 }
 
+/* Settings view */
 .settings-view {
   display: flex;
   flex-direction: column;

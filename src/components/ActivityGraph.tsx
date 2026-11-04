@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { activityDays } from '../lib/activity'
 import { EVENTS } from '../lib/events'
 import { formatMs } from '../lib/format'
@@ -29,7 +29,8 @@ const longDate = (day: number) =>
 /**
  * A year of practice, one square per day: columns are weeks (Sunday first), and the darker
  * the square, the more solves that day. Counts every session and event, plus cleared solves
- * kept for activity. Hovering a day shows its solves and best single per event.
+ * kept for activity. Hovering a day shows its solves and best single per event, with that
+ * solve's scramble; clicking the day keeps the card open to copy it.
  */
 export function ActivityGraph() {
   const { state } = useStore()
@@ -76,14 +77,51 @@ export function ActivityGraph() {
   // The day under the pointer, placed above its square.
   const box = useRef<HTMLElement>(null)
   const [tip, setTip] = useState<{ day: number; x: number; y: number } | null>(null)
-  const onOver = (e: PointerEvent) => {
-    const cell = (e.target as HTMLElement).closest<HTMLElement>('[data-day]')
-    if (!cell || !box.current) return setTip(null)
+  // Clicking a day keeps its card open, so its scrambles can be copied.
+  const [pinned, setPinned] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
+  const place = (target: EventTarget) => {
+    const cell = (target as HTMLElement).closest<HTMLElement>('[data-day]')
+    if (!cell || !box.current) return null
     const r = cell.getBoundingClientRect()
     const b = box.current.getBoundingClientRect()
     // Kept inside the section so the card never runs off the page.
-    const x = Math.min(Math.max(r.left + r.width / 2 - b.left, 96), b.width - 96)
-    setTip({ day: Number(cell.dataset.day), x, y: r.top - b.top })
+    const x = Math.min(Math.max(r.left + r.width / 2 - b.left, 150), b.width - 150)
+    return { day: Number(cell.dataset.day), x, y: r.top - b.top }
+  }
+  const onOver = (e: PointerEvent) => !pinned && setTip(place(e.target))
+  const close = () => {
+    setPinned(false)
+    setTip(null)
+  }
+  const onClick = (e: { target: EventTarget }) => {
+    const at = place(e.target)
+    if (!at || (pinned && tip?.day === at.day)) return close()
+    setTip(at)
+    setPinned(true)
+  }
+  useEffect(() => {
+    if (!pinned) return
+    const onDown = (e: globalThis.PointerEvent) => {
+      const t = e.target as HTMLElement
+      if (!t.closest('.activity-tip, .activity-cells')) close()
+    }
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close()
+    document.addEventListener('pointerdown', onDown)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [pinned])
+  const copy = async (scramble: string) => {
+    try {
+      await navigator.clipboard.writeText(scramble)
+      setCopied(scramble)
+      window.setTimeout(() => setCopied(null), 1500)
+    } catch {
+      // Clipboard blocked.
+    }
   }
   const tipEvents = tip
     ? EVENTS.filter((e) => days[tip.day]?.[e.id]).map((e) => ({ event: e, ...days[tip.day][e.id] }))
@@ -99,7 +137,7 @@ export function ActivityGraph() {
           {plural(s.longest, 'day')}.
         </p>
       </div>
-      <div className="activity-scroll" ref={scroller} onScroll={() => setTip(null)}>
+      <div className="activity-scroll" ref={scroller} onScroll={close}>
         <div className="activity-grid" style={{ ['--weeks' as string]: WEEKS }}>
           <span className="activity-days" aria-hidden="true">
             <span>Mon</span>
@@ -118,7 +156,8 @@ export function ActivityGraph() {
             role="img"
             aria-label={`${plural(total, 'solve')} in the last year`}
             onPointerOver={onOver}
-            onPointerLeave={() => setTip(null)}
+            onPointerLeave={() => !pinned && setTip(null)}
+            onClick={onClick}
           >
             {weeks.flat().map((c) => (
               <span
@@ -132,20 +171,41 @@ export function ActivityGraph() {
         </div>
       </div>
       {tip && (
-        <div className="activity-tip" style={{ left: tip.x, top: tip.y }} role="tooltip">
+        <div
+          className="activity-tip"
+          data-pinned={pinned || undefined}
+          style={{ left: tip.x, top: tip.y }}
+          role={pinned ? 'dialog' : 'tooltip'}
+          aria-label={longDate(tip.day)}
+        >
           <p className="activity-tip-head">
             <span>{longDate(tip.day)}</span>
             <span>{tipCount ? plural(tipCount, 'solve') : 'No solves'}</span>
           </p>
           {tipEvents.map((t) => (
-            <p key={t.event.id} className="activity-tip-row">
-              <span>{t.event.name}</span>
-              <span>
-                {tipEvents.length > 1 && `${plural(t.count, 'solve')}, `}
-                best {t.best === null ? 'DNF' : formatMs(t.best, state.settings.decimals)}
-              </span>
-            </p>
+            <div key={t.event.id} className="activity-tip-event">
+              <p className="activity-tip-row">
+                <span>{t.event.name}</span>
+                <span>
+                  {tipEvents.length > 1 && `${plural(t.count, 'solve')}, `}
+                  best {t.best === null ? 'DNF' : formatMs(t.best, state.settings.decimals)}
+                </span>
+              </p>
+              {t.scramble && (
+                <p className="activity-tip-scramble">
+                  <span>{t.scramble}</span>
+                  {pinned && (
+                    <button className="text-button" onClick={() => copy(t.scramble!)}>
+                      {copied === t.scramble ? 'Copied' : 'Copy'}
+                    </button>
+                  )}
+                </p>
+              )}
+            </div>
           ))}
+          {!pinned && tipEvents.some((t) => t.scramble) && (
+            <p className="activity-tip-hint">Click the day to copy a scramble</p>
+          )}
         </div>
       )}
       <p className="activity-key muted" aria-hidden="true">

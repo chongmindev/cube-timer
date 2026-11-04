@@ -9,6 +9,8 @@ import { dayNumber } from './streak'
 export interface DayTotal {
   count: number
   best: number | null
+  /** The best single's scramble (missing from totals kept before scrambles were). */
+  scramble?: string
 }
 
 /** Day number to event id to that day's totals. */
@@ -20,18 +22,21 @@ export interface ActivityBatch {
   days: Days
 }
 
-function add(days: Days, day: number, event: string, count: number, best: number | null) {
+function add(days: Days, day: number, event: string, count: number, best: number | null, scramble?: string) {
   const forDay = (days[day] ??= {})
   const t = (forDay[event] ??= { count: 0, best: null })
   t.count += count
-  if (best !== null && (t.best === null || best < t.best)) t.best = best
+  if (best !== null && (t.best === null || best < t.best)) {
+    t.best = best
+    t.scramble = scramble
+  }
 }
 
 export function summarize(solves: Solve[], event: string): Days {
   const days: Days = {}
   for (const s of solves) {
     const time = effective(s)
-    add(days, dayNumber(s.date), event, 1, time === Infinity ? null : time)
+    add(days, dayNumber(s.date), event, 1, time === Infinity ? null : time, s.scramble)
   }
   return days
 }
@@ -41,7 +46,7 @@ export function activityDays(state: State): Days {
   const days: Days = {}
   const merge = (from: Days) => {
     for (const [day, events] of Object.entries(from)) {
-      for (const [event, t] of Object.entries(events)) add(days, Number(day), event, t.count, t.best)
+      for (const [event, t] of Object.entries(events)) add(days, Number(day), event, t.count, t.best, t.scramble)
     }
   }
   for (const session of state.sessions) merge(summarize(session.solves, session.event))

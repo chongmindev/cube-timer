@@ -20,14 +20,14 @@ npm run dev
 - **Timer:** on a computer, hold space for 0.55 seconds (the Stackmat's hold) until the time turns green, then let go (clicking doesn't start it). On a phone, hold the time instead. Any key or tap stops it.
 - Optional 15 second WCA inspection with automatic +2 and DNF. Toggle it right on the timer screen or press `I`.
 - Typing mode (`T`) for entering times from another timer: `1234` is 12.34, end with `+` for a +2, or type `DNF`.
-- A year of practice on the Sessions page, GitHub style, with your streak. Hover a day for its solves and best single.
+- A year of practice on the Sessions page, GitHub style, with your streak. Hover a day for its solves and best single with its scramble; click the day to copy it.
 - **Reconstruct** a 3x3 solve from its sheet, one CFOP step at a time on a 3D cube: say how you held it, pick or type your cross, then pairs, OLL and PLL. The app suggests likely moves at each step (pairs you'd have seen first rank highest), checks what you enter against the cube, and saves the result so it's included when you share the solve.
 - Random-state scrambles for all WCA events (via [cubing.js](https://js.cubing.net/cubing/)), with a few saved ahead for every event so a new one shows up instantly, and a flat preview of the scrambled puzzle, plus Previous and Next scramble.
 - Focus mode fades everything but the time while you solve.
 - After a solve: `2` toggles +2, `D` toggles DNF, `Backspace` deletes, with undo.
 - Live ao5, ao12 and best, plus a notice when you set a new best.
 - **Recons:** every reconstruction from every session in one tab, newest first, with drafts marked. Click one to keep editing it.
-- **Sessions:** one per event or several, with current and best single, mo3, ao5, ao12, ao50 and ao100.
+- **Sessions:** one per event or several, with current and best single, mo3, ao5, ao12, ao25, ao50 and ao100, plus ao200, ao500 and ao1000 once a session is that long. The same table is a Stats tab beside Times on the timer screen.
 - **WCA profile:** connect your WCA ID in Settings to see your official singles, averages and world ranks, with your official single shown beside your best on the timer. It uses the WCA's public API, with no sign-in.
 - **Settings:** inspection, what to show while solving, decimals, theme, export and import.
 

@@ -12,6 +12,7 @@ import { Menu } from './Menu'
 import { Shape } from './Shape'
 import { ImportScrambles } from './ImportScrambles'
 import { SolveDetail } from './SolveDetail'
+import { StatsTable } from './StatsTable'
 import { TimesList } from './TimesList'
 
 export function TimerView({
@@ -403,12 +404,36 @@ export function TimerView({
 
       <aside className="side side-right chrome">
         <header className="side-head">
-          <h2>Times</h2>
-          <button className="text-button danger" onClick={clear} disabled={current.solves.length === 0}>
-            Clear times
-          </button>
+          <div className="side-tabs" role="tablist" aria-label="Times or stats">
+            {(['times', 'stats'] as const).map((panel) => (
+              <button
+                key={panel}
+                role="tab"
+                className="view-link"
+                aria-selected={settings.sidePanel === panel}
+                onClick={() => dispatch({ type: 'updateSettings', patch: { sidePanel: panel } })}
+              >
+                {panel === 'times' ? 'Times' : 'Stats'}
+              </button>
+            ))}
+          </div>
+          {settings.sidePanel === 'times' && (
+            <button className="text-button danger" onClick={clear} disabled={current.solves.length === 0}>
+              Clear times
+            </button>
+          )}
         </header>
-        <TimesList solves={current.solves} decimals={settings.decimals} onOpen={setOpenId} />
+        {settings.sidePanel === 'times' ? (
+          <TimesList solves={current.solves} decimals={settings.decimals} onOpen={setOpenId} />
+        ) : (
+          <div role="tabpanel">
+            <StatsTable solves={current.solves} stats={stats} decimals={settings.decimals} />
+            <p className="side-note">
+              {stats.count} solves, mean {formatMs(stats.mean, settings.decimals)}
+              {stats.dnfs > 0 && `, ${stats.dnfs} DNF`}
+            </p>
+          </div>
+        )}
       </aside>
 
       {importing && (
