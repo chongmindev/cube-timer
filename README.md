@@ -26,6 +26,7 @@ npm run dev
 - Focus mode fades everything but the time while you solve.
 - After a solve: `2` toggles +2, `D` toggles DNF, `Backspace` deletes, with undo.
 - Live ao5, ao12 and best, plus a notice when you set a new best.
+- **Recons:** every reconstruction from every session in one tab, newest first, with drafts marked. Click one to keep editing it.
 - **Sessions:** one per event or several, with current and best single, mo3, ao5, ao12, ao50 and ao100.
 - **WCA profile:** connect your WCA ID in Settings to see your official singles, averages and world ranks, with your official single shown beside your best on the timer. It uses the WCA's public API, with no sign-in.
 - **Settings:** inspection, what to show while solving, decimals, theme, export and import.

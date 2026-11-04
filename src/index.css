@@ -1263,7 +1263,8 @@ kbd {
 }
 
 .session-head h1,
-.settings-view h1 {
+.settings-view h1,
+.recons-view h1 {
   font-size: clamp(2.5rem, 6vw, 4.25rem);
   font-weight: 700;
   letter-spacing: -0.035em;
@@ -1327,6 +1328,50 @@ kbd {
 }
 
 /* Settings view */
+/* Recons: every reconstruction in one table, newest first. */
+.recons-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem clamp(1rem, 4vw, 2.5rem) 3rem;
+  max-width: 70rem;
+}
+
+.recons th,
+.recons td {
+  text-align: left;
+  padding-right: 1.5rem;
+}
+
+.recons th:last-child,
+.recons td:last-child {
+  padding-right: 0;
+}
+
+.recons td {
+  vertical-align: baseline;
+}
+
+.recons-steps {
+  max-width: 28rem;
+}
+
+.recons-draft {
+  margin-left: 0.6rem;
+  color: var(--red);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .recons th:nth-child(4),
+  .recons td:nth-child(4),
+  .recons th:nth-child(5),
+  .recons td:nth-child(5) {
+    display: none;
+  }
+}
+
 .settings-view {
   display: flex;
   flex-direction: column;

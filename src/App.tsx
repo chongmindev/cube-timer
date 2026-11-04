@@ -3,15 +3,17 @@ import { SessionsView } from './components/SessionsView'
 import { SettingsView } from './components/SettingsView'
 import { Logo } from './components/Logo'
 import { ReconstructView } from './components/ReconstructView'
+import { ReconsView } from './components/ReconsView'
 import { TimerView } from './components/TimerView'
 import { getEvent } from './lib/events'
 import { StoreProvider, useStore } from './lib/store'
 
-type View = 'timer' | 'sessions' | 'settings'
+type View = 'timer' | 'sessions' | 'recons' | 'settings'
 
 const VIEWS: { id: View; label: string }[] = [
   { id: 'timer', label: 'Timer' },
   { id: 'sessions', label: 'Sessions' },
+  { id: 'recons', label: 'Recons' },
   { id: 'settings', label: 'Settings' },
 ]
 
@@ -78,6 +80,14 @@ function Shell() {
         <main key={view} id="main" tabIndex={-1} className="view">
           {view === 'timer' && <TimerView onFocusChange={onFocusChange} onReconstruct={setReconId} />}
           {view === 'sessions' && <SessionsView onOpenTimer={() => setView('timer')} onReconstruct={setReconId} />}
+          {view === 'recons' && (
+            <ReconsView
+              onOpen={(sessionId, solveId) => {
+                dispatch({ type: 'selectSession', id: sessionId })
+                setReconId(solveId)
+              }}
+            />
+          )}
           {view === 'settings' && <SettingsView />}
         </main>
       )}
